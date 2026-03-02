@@ -100,6 +100,12 @@
     .nav-sep { width: 1px; height: 18px; background: var(--border); flex-shrink: 0; }
     .nav-cta { display: flex; align-items: center; gap: 12px; }
 
+    /* ─── Buy Me a Coffee ────────────────────────────────────────────── */
+    .btn-bmc { display: inline-flex; align-items: center; gap: 7px; background: #FFDD00; color: #000; font-weight: 700; font-size: 0.9rem; padding: 10px 22px; border-radius: 10px; text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 12px rgba(255,221,0,0.3); }
+    .btn-bmc:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,221,0,0.45); }
+    .nav-bmc { font-size: 0.8rem; font-weight: 700; color: var(--text-2); text-decoration: none; padding: 4px 10px; border-radius: 6px; background: rgba(255,221,0,0.12); transition: background 0.15s; }
+    .nav-bmc:hover { background: rgba(255,221,0,0.25); color: var(--text); }
+
     /* ─── Lang switcher ───────────────────────────────────────────────── */
     .lang-switch { display: flex; align-items: center; gap: 3px; }
     .lang-btn { background: none; border: 1.5px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; font-weight: 700; color: var(--text-2); cursor: pointer; font-family: inherit; letter-spacing: 0.04em; transition: all 0.15s; }
@@ -275,6 +281,7 @@
     </nav>
 
     <div class="nav-cta">
+      <a href="https://buymeacoffee.com/danipardo24" target="_blank" rel="noopener" class="nav-bmc hide-sm">☕</a>
       <a href="#download" class="btn btn-primary" style="padding:9px 20px;font-size:0.85rem;" data-i18n="nav_download">
         Descarregar
       </a>
@@ -555,7 +562,13 @@
     <a href="https://github.com/Pardo24/caliu/releases/latest" class="btn btn-primary" data-i18n="cta_btn">
       Descarregar Caliu per Windows
     </a>
-    <p class="cta-note" data-i18n="cta_note">Windows 10 / 11 &nbsp;·&nbsp; x64 &nbsp;·&nbsp; v1.0.4 &nbsp;·&nbsp; Docker Desktop necessari (gratuït)</p>
+    <p class="cta-note" data-i18n="cta_note">Windows 10 / 11 &nbsp;·&nbsp; x64 &nbsp;·&nbsp; v1.0.6 &nbsp;·&nbsp; Docker Desktop necessari (gratuït)</p>
+    <div style="margin-top:28px;">
+      <a href="https://buymeacoffee.com/danipardo24" target="_blank" rel="noopener" class="btn-bmc">
+        ☕ <span data-i18n="bmc_btn">Invita'm a un cafè</span>
+      </a>
+      <p style="font-size:0.78rem;color:var(--text-2);margin-top:10px;" data-i18n="bmc_sub">Si Caliu t'ha estat útil, pots donar suport al projecte amb un cafè.</p>
+    </div>
   </div>
 </section>
 
@@ -576,6 +589,7 @@
         <a href="https://github.com/Pardo24/caliu/releases" target="_blank" data-i18n="footer_releases">Versions</a>
         <a href="guia.html" data-i18n="footer_guide_link">Guia d'usuari</a>
         <a href="https://github.com/Pardo24/caliu/issues" target="_blank" data-i18n="footer_issues">Reportar error</a>
+        <a href="https://buymeacoffee.com/danipardo24" target="_blank" rel="noopener" data-i18n="footer_bmc">☕ Suport al projecte</a>
       </div>
       <div class="footer-links">
         <h4 data-i18n="footer_col2">Eines recomanades</h4>
@@ -649,6 +663,9 @@ const i18n = {
     footer_col1:"Projecte", footer_releases:"Versions", footer_guide_link:"Guia d'usuari", footer_issues:"Reportar error",
     footer_col2:"Eines recomanades", footer_col3:"Serveis",
     footer_disclaimer:"Alguns enllaços poden ser de referit. Caliu no s'associa amb cap dels serveis que menciona.",
+    footer_bmc:"☕ Suport al projecte",
+    bmc_btn:"Invita'm a un cafè",
+    bmc_sub:"Si Caliu t'ha estat útil, pots donar suport al projecte amb un cafè.",
   },
   es: {
     nav_features:"Características", nav_how:"Cómo funciona", nav_guide:"Guía", nav_download:"Descargar",
@@ -697,6 +714,9 @@ const i18n = {
     footer_col1:"Proyecto", footer_releases:"Versiones", footer_guide_link:"Guía de usuario", footer_issues:"Reportar error",
     footer_col2:"Herramientas recomendadas", footer_col3:"Servicios",
     footer_disclaimer:"Algunos enlaces pueden ser de referido. Caliu no se asocia con ninguno de los servicios que menciona.",
+    footer_bmc:"☕ Apoya el proyecto",
+    bmc_btn:"Invítame a un café",
+    bmc_sub:"Si Caliu te ha sido útil, puedes apoyar el proyecto con un café.",
   },
   en: {
     nav_features:"Features", nav_how:"How it works", nav_guide:"Guide", nav_download:"Download",
@@ -745,6 +765,9 @@ const i18n = {
     footer_col1:"Project", footer_releases:"Releases", footer_guide_link:"User guide", footer_issues:"Report issue",
     footer_col2:"Recommended tools", footer_col3:"Services",
     footer_disclaimer:"Some links may be referral links. Caliu is not affiliated with any of the services it mentions.",
+    footer_bmc:"☕ Support the project",
+    bmc_btn:"Buy me a coffee",
+    bmc_sub:"If Caliu has been useful to you, you can support the project with a coffee.",
   }
 };
 
