@@ -1,0 +1,183 @@
+# ============================================================
+# Media Stack — Jellyfin + *arr + qBittorrent (sense VPN)
+# ============================================================
+
+networks:
+  media_net:
+    name: media_net
+    driver: bridge
+
+services:
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: media_jellyfin
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"
+      - "1900:1900/udp"
+    volumes:
+      - ${DATA_PATH}/jellyfin/config:/config
+      - ${DATA_PATH}/jellyfin/cache:/cache
+      - ${DATA_PATH}/jellyfin/media/movies:/media/movies
+      - ${DATA_PATH}/jellyfin/media/series:/media/series
+      - ${DATA_PATH}/jellyfin/media/music:/media/music
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: media_jellyseerr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${JELLYSEERR_PORT:-5055}:5055"
+    volumes:
+      - ${DATA_PATH}/jellyseerr/config:/app/config
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: media_prowlarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${PROWLARR_PORT:-9696}:9696"
+    volumes:
+      - ${DATA_PATH}/prowlarr/config:/config
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: media_radarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${RADARR_PORT:-7878}:7878"
+    volumes:
+      - ${DATA_PATH}/radarr/config:/config
+      - ${DATA_PATH}/downloads:/downloads
+      - ${DATA_PATH}/jellyfin/media/movies:/movies
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: media_sonarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${SONARR_PORT:-8989}:8989"
+    volumes:
+      - ${DATA_PATH}/sonarr/config:/config
+      - ${DATA_PATH}/downloads:/downloads
+      - ${DATA_PATH}/jellyfin/media/series:/tv
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: media_lidarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${LIDARR_PORT:-8686}:8686"
+    volumes:
+      - ${DATA_PATH}/lidarr/config:/config
+      - ${DATA_PATH}/downloads:/downloads
+      - ${DATA_PATH}/jellyfin/media/music:/music
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: media_bazarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${BAZARR_PORT:-6767}:6767"
+    volumes:
+      - ${DATA_PATH}/bazarr/config:/config
+      - ${DATA_PATH}/jellyfin/media/movies:/movies
+      - ${DATA_PATH}/jellyfin/media/series:/tv
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: media_qbittorrent
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${QBIT_PORT:-8090}:8080"
+      - "6881:6881/tcp"
+      - "6881:6881/udp"
+    volumes:
+      - ${DATA_PATH}/qbittorrent/config:/config
+      - ${DATA_PATH}/downloads:/downloads
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+      WEBUI_PORT: 8080
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M

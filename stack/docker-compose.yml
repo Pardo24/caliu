@@ -1,0 +1,226 @@
+# ============================================================
+# Media Stack — Jellyfin + *arr + qBittorrent (Mullvad VPN)
+# Arrancar:  docker compose -f docker-compose.media.yml up -d
+# Parar:     docker compose -f docker-compose.media.yml down
+# ============================================================
+
+networks:
+  media_net:
+    name: media_net
+    driver: bridge
+
+services:
+
+  # Jellyfin — Servidor de streaming multimedia    :8096
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: media_jellyfin
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"
+      - "1900:1900/udp"
+    volumes:
+      - ${DATA_PATH}/jellyfin/config:/config
+      - ${DATA_PATH}/jellyfin/cache:/cache
+      - ${DATA_PATH}/jellyfin/media/movies:/media/movies
+      - ${DATA_PATH}/jellyfin/media/series:/media/series
+      - ${DATA_PATH}/jellyfin/media/music:/media/music
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+
+  # Jellyseerr — Solicitar películas y series    :5055
+  jellyseerr:
+    image: fallenbagel/jellyseerr:latest
+    container_name: media_jellyseerr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${JELLYSEERR_PORT:-5055}:5055"
+    volumes:
+      - ${DATA_PATH}/jellyseerr/config:/app/config
+    environment:
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # Prowlarr — Gestor de indexadores    :9696
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: media_prowlarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${PROWLARR_PORT:-9696}:9696"
+    volumes:
+      - ${DATA_PATH}/prowlarr/config:/config
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # Radarr — Gestión automática de películas    :7878
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: media_radarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${RADARR_PORT:-7878}:7878"
+    volumes:
+      - ${DATA_PATH}/radarr/config:/config
+      - ${DATA_PATH}/downloads:/downloads
+      - ${DATA_PATH}/jellyfin/media/movies:/movies
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # Sonarr — Gestión automática de series    :8989
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: media_sonarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${SONARR_PORT:-8989}:8989"
+    volumes:
+      - ${DATA_PATH}/sonarr/config:/config
+      - ${DATA_PATH}/downloads:/downloads
+      - ${DATA_PATH}/jellyfin/media/series:/tv
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # Lidarr — Gestión automática de música    :8686
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: media_lidarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${LIDARR_PORT:-8686}:8686"
+    volumes:
+      - ${DATA_PATH}/lidarr/config:/config
+      - ${DATA_PATH}/downloads:/downloads
+      - ${DATA_PATH}/jellyfin/media/music:/music
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # Bazarr — Subtítulos automáticos    :6767
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: media_bazarr
+    restart: unless-stopped
+    networks:
+      - media_net
+    ports:
+      - "${BAZARR_PORT:-6767}:6767"
+    volumes:
+      - ${DATA_PATH}/bazarr/config:/config
+      - ${DATA_PATH}/jellyfin/media/movies:/movies
+      - ${DATA_PATH}/jellyfin/media/series:/tv
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  # Gluetun — VPN client (Mullvad WireGuard) para qBittorrent
+  # Si no tienes Mullvad, elimina gluetun y quita network_mode de qbittorrent
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: media_gluetun
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      - media_net
+    ports:
+      - "${QBIT_PORT:-8090}:8080"
+      - "6881:6881/tcp"
+      - "6881:6881/udp"
+    environment:
+      VPN_SERVICE_PROVIDER: mullvad
+      VPN_TYPE: wireguard
+      WIREGUARD_PRIVATE_KEY: ${MULLVAD_PRIVATE_KEY}
+      WIREGUARD_ADDRESSES: ${MULLVAD_ADDRESSES}
+      SERVER_COUNTRIES: Spain
+      TZ: ${TZ:-Europe/Madrid}
+    healthcheck:
+      test: ["CMD", "/gluetun-entrypoint", "healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+
+  # qBittorrent — Cliente de descargas (tráfico por VPN)    :8090
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: media_qbittorrent
+    restart: unless-stopped
+    network_mode: "service:gluetun"
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    volumes:
+      - ${DATA_PATH}/qbittorrent/config:/config
+      - ${DATA_PATH}/downloads:/downloads
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TZ:-Europe/Madrid}
+      WEBUI_PORT: 8080
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
