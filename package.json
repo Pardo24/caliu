@@ -1,8 +1,8 @@
 {
-  "name": "caliu",
-  "productName": "caliu",
+  "name": "moss",
+  "productName": "Moss",
   "version": "1.0.7",
-  "description": "My Electron application description",
+  "description": "Your wild home media server",
   "main": ".vite/build/main.js",
   "private": true,
   "scripts": {

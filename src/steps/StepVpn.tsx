@@ -29,13 +29,13 @@ export default function StepVpn({ config, updateConfig, next }: Props) {
           className="card-sm w-full px-6 py-4 text-left transition-all"
           style={config.vpnEnabled ? {
             borderColor: 'var(--accent)',
-            background: 'rgba(249,115,22,0.04)',
-            boxShadow: '0 0 0 2px rgba(249,115,22,0.2)'
+            background: 'rgba(13,148,136,0.04)',
+            boxShadow: '0 0 0 2px rgba(13,148,136,0.2)'
           } : {}}
         >
           <p className="font-semibold">
             {t.vpn_yes}
-            <span className="ml-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(249,115,22,0.12)', color: 'var(--accent)' }}>
+            <span className="ml-2 text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(13,148,136,0.12)', color: 'var(--accent)' }}>
               {t.vpn_yes_tag}
             </span>
           </p>

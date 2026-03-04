@@ -14,4 +14,5 @@ contextBridge.exposeInMainWorld('electron', {
   resetInstall: ()                  => ipcRenderer.invoke('reset-install'),
   openExternal: (url: string)       => ipcRenderer.invoke('open-external', url),
   getVersion:   ()                  => ipcRenderer.invoke('get-version'),
+  getDiskStats: (p: string)         => ipcRenderer.invoke('get-disk-stats', p),
 });

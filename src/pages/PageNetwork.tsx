@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useT } from '../LangContext';
 import ServiceIcon, { type ServiceName } from '../components/ServiceIcon';
+import PageVpn from './PageVpn';
 
 const SERVICES: { name: ServiceName; port: number }[] = [
   { name: 'Jellyfin',    port: 8096 },
@@ -11,13 +13,24 @@ const SERVICES: { name: ServiceName; port: number }[] = [
   { name: 'qBittorrent', port: 8090 },
 ];
 
-export default function PageNetwork({ config: _config }: { config: Record<string, string> }) {
+type Props = { config: Record<string, string>; onChanged: () => void; scrollToVpn?: boolean };
+
+export default function PageNetwork({ config, onChanged, scrollToVpn }: Props) {
   const { t } = useT();
   const [ip, setIp] = useState<string>('...');
   const [copied, setCopied] = useState('');
+  const [openService, setOpenService] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const vpnRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     window.electron.getLocalIp().then((addr: string) => setIp(addr));
+  }, []);
+
+  useEffect(() => {
+    if (scrollToVpn) {
+      setTimeout(() => vpnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 120);
+    }
   }, []);
 
   const copy = (text: string, key: string) => {
@@ -41,26 +54,50 @@ export default function PageNetwork({ config: _config }: { config: Record<string
         </div>
       </div>
 
-      {/* Service URLs */}
+      {/* Service URLs — collapsed accordion */}
       <div>
-        <p className="text-xs font-semibold mb-3" style={{ color: 'var(--text-2)' }}>{t.net_services_title}</p>
-        <div className="space-y-2">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-xs font-semibold" style={{ color: 'var(--text-2)' }}>{t.net_services_title}</p>
+          <button
+            onClick={() => { setShowAll(v => !v); setOpenService(null); }}
+            className="btn-ghost"
+            style={{ padding: '2px 8px', fontSize: '0.7rem' }}
+          >
+            {showAll ? t.net_collapse : t.net_show_all}
+          </button>
+        </div>
+        <div className="flex flex-col gap-1">
           {SERVICES.map(s => {
             const url = `http://${ip}:${s.port}`;
+            const isOpen = showAll || openService === s.name;
             return (
-              <div key={s.name} className="card-sm flex items-center gap-3" style={{ padding: '10px 16px' }}>
-                <ServiceIcon name={s.name} size={18} />
-                <span className="text-xs font-medium shrink-0" style={{ width: 80, color: 'var(--text-2)' }}>{s.name}</span>
+              <div key={s.name} className="card-sm overflow-hidden" style={{ padding: 0 }}>
                 <button
-                  onClick={() => window.electron.openExternal(url)}
-                  className="font-mono text-xs flex-1 text-left truncate"
-                  style={{ color: '#3b82f6' }}
+                  onClick={() => !showAll && setOpenService(openService === s.name ? null : s.name)}
+                  className="flex items-center gap-2 w-full"
+                  style={{ padding: '7px 12px', background: 'none', border: 'none', cursor: showAll ? 'default' : 'pointer' }}
                 >
-                  {url}
+                  <ServiceIcon name={s.name} size={16} />
+                  <span className="text-xs font-medium flex-1 text-left" style={{ color: 'var(--text-2)' }}>{s.name}</span>
+                  {!showAll && (isOpen
+                    ? <ChevronUp size={11} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
+                    : <ChevronDown size={11} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
+                  )}
                 </button>
-                <button onClick={() => copy(url, s.name)} className="btn-ghost shrink-0" style={{ padding: '3px 8px', fontSize: '0.72rem' }}>
-                  {copied === s.name ? t.net_copied : t.net_copy}
-                </button>
+                {isOpen && (
+                  <div className="flex items-center gap-2" style={{ padding: '4px 12px 7px', borderTop: '1px solid var(--border)' }}>
+                    <button
+                      onClick={() => window.electron.openExternal(url)}
+                      className="font-mono text-xs flex-1 text-left truncate"
+                      style={{ color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    >
+                      {url}
+                    </button>
+                    <button onClick={() => copy(url, s.name)} className="btn-ghost shrink-0" style={{ padding: '2px 8px', fontSize: '0.7rem' }}>
+                      {copied === s.name ? t.net_copied : t.net_copy}
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -78,6 +115,11 @@ export default function PageNetwork({ config: _config }: { config: Record<string
           {t.net_tailscale_btn}
         </button>
         <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{t.net_tailscale_desc}</p>
+      </div>
+
+      {/* VPN */}
+      <div ref={vpnRef}>
+        <PageVpn config={config} onChanged={onChanged} />
       </div>
     </div>
   );

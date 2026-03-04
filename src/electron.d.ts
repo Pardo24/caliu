@@ -16,6 +16,7 @@ declare global {
       addVpn:         (cfg: { mullvadKey: string; mullvadAddress: string }) => Promise<void>;
       removeVpn:      () => Promise<void>;
       getVersion:     () => Promise<string>;
+      getDiskStats:   (path: string) => Promise<{ freeBytes: number; totalBytes: number } | null>;
     };
   }
 }

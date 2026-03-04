@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useT } from '../LangContext';
 import type { Lang } from '../i18n';
 
@@ -8,11 +9,14 @@ const LANGS: { code: Lang; label: string }[] = [
   { code: 'en', label: 'English' },
 ];
 
-export default function PageSettings({ onReinstall }: { onReinstall: () => void }) {
+type Props = { config: Record<string, string>; onReinstall: () => void };
+
+export default function PageSettings({ config, onReinstall }: Props) {
   const { t, lang, setLang } = useT();
   const [confirming, setConfirming] = useState(false);
   const [working, setWorking] = useState(false);
   const [version, setVersion] = useState('…');
+  const [showPass, setShowPass] = useState(false);
 
   useEffect(() => { window.electron.getVersion().then(setVersion).catch(() => setVersion('—')); }, []);
 
@@ -45,6 +49,48 @@ export default function PageSettings({ onReinstall }: { onReinstall: () => void 
       <div className="card-sm flex items-center gap-3" style={{ padding: '12px 16px' }}>
         <span className="text-sm" style={{ color: 'var(--text-2)' }}>{t.cfg_version_label}</span>
         <span className="font-mono text-sm font-semibold" style={{ color: 'var(--text)' }}>{version}</span>
+      </div>
+
+      {/* Credentials */}
+      <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-semibold">{t.cfg_credentials_label}</h3>
+          <button onClick={() => setShowPass(v => !v)} className="btn-ghost" style={{ padding: '4px 8px', fontSize: '0.75rem', gap: 4 }}>
+            {showPass ? <EyeOff size={12} /> : <Eye size={12} />}
+            {showPass ? t.cfg_hide : t.cfg_show}
+          </button>
+        </div>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>{t.cfg_credentials_desc}</p>
+        <div className="space-y-2">
+          {[
+            { service: 'Jellyfin',    user: 'admin', pass: config.JELLYFIN_ADMIN_PASSWORD || '—' },
+            { service: 'qBittorrent', user: 'admin', pass: 'adminadmin' },
+          ].map(row => (
+            <div key={row.service} className="card-sm flex items-center gap-3" style={{ padding: '8px 14px' }}>
+              <span className="text-xs font-semibold shrink-0" style={{ width: 82, color: 'var(--text-2)' }}>{row.service}</span>
+              <span className="font-mono text-xs" style={{ color: 'var(--text-3)' }}>{row.user}</span>
+              <span className="text-xs" style={{ color: 'var(--text-3)' }}>/</span>
+              <span className="font-mono text-xs flex-1" style={{ color: 'var(--text)' }}>
+                {showPass ? row.pass : '••••••••'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Tutorial */}
+      <div className="card-sm flex items-center gap-3" style={{ padding: '12px 16px' }}>
+        <div className="flex flex-col gap-0.5 flex-1">
+          <span className="text-sm font-semibold">{t.cfg_tutorial_label}</span>
+          <span className="text-xs" style={{ color: 'var(--text-3)' }}>{t.cfg_tutorial_desc}</span>
+        </div>
+        <button
+          onClick={() => { localStorage.removeItem('moss_onboarded'); window.location.reload(); }}
+          className="btn-secondary"
+          style={{ padding: '7px 16px', minWidth: 'unset', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+        >
+          {t.cfg_tutorial_btn}
+        </button>
       </div>
 
       {/* Reinstall */}

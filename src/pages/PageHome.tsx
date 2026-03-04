@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, FolderOpen, Settings, ChevronDown, ChevronUp, Download } from 'lucide-react';
+import { RefreshCw, FolderOpen, Settings, ChevronDown, ChevronUp, Download, Coffee, ShieldCheck, Power, Square } from 'lucide-react';
 import { useT } from '../LangContext';
 import ServiceIcon from '../components/ServiceIcon';
 
 type Status = 'checking' | 'running' | 'stopped';
 type Action  = 'idle' | 'starting' | 'stopping';
 
-const CONFIG_DISMISSED_KEY = 'caliu_config_hint_dismissed';
+const CONFIG_DISMISSED_KEY = 'moss_config_hint_dismissed';
 
 function StatusDot({ status }: { status: Status }) {
   const color = status === 'running' ? '#22c55e' : status === 'stopped' ? '#ef4444' : '#eab308';
@@ -19,7 +19,14 @@ function StatusDot({ status }: { status: Status }) {
   );
 }
 
-export default function PageHome({ config }: { config: Record<string, string> }) {
+const formatGB = (bytes: number) => (bytes / 1024 / 1024 / 1024).toFixed(1);
+
+type Props = {
+  config: Record<string, string>;
+  onGoToVpn: () => void;
+};
+
+export default function PageHome({ config, onGoToVpn }: Props) {
   const { t } = useT();
   const [status, setStatus]   = useState<Status>('checking');
   const [action, setAction]   = useState<Action>('idle');
@@ -27,6 +34,7 @@ export default function PageHome({ config }: { config: Record<string, string> })
   const [hintDismissed, setHintDismissed] = useState(
     () => localStorage.getItem(CONFIG_DISMISSED_KEY) === 'true'
   );
+  const [diskStats, setDiskStats] = useState<{ freeBytes: number; totalBytes: number } | null>(null);
 
   const checkStatus = async () => {
     const s = await window.electron.getStatus();
@@ -34,6 +42,12 @@ export default function PageHome({ config }: { config: Record<string, string> })
   };
 
   useEffect(() => { checkStatus(); }, []);
+
+  useEffect(() => {
+    if (config.DATA_PATH) {
+      window.electron.getDiskStats(config.DATA_PATH).then(setDiskStats).catch(() => {});
+    }
+  }, [config.DATA_PATH]);
 
   const handleStart = async () => {
     setAction('starting');
@@ -54,6 +68,8 @@ export default function PageHome({ config }: { config: Record<string, string> })
     setHintDismissed(true);
   };
 
+  const vpnEnabled = !!config.MULLVAD_PRIVATE_KEY;
+
   return (
     <div className="flex flex-col gap-3 pt-5 px-5 pb-5">
 
@@ -65,14 +81,18 @@ export default function PageHome({ config }: { config: Record<string, string> })
         <div className="flex items-center gap-2">
           {status !== 'running' && (
             <button onClick={handleStart} disabled={action !== 'idle'} className="btn-primary"
-              style={{ padding: '6px 18px', minWidth: 'unset', fontSize: '0.82rem' }}>
-              {action === 'starting' ? t.home_starting : t.home_start}
+              style={{ padding: '8px 20px', minWidth: 'unset', fontSize: '0.82rem', gap: 6, display: 'inline-flex', alignItems: 'center' }}>
+              {action === 'starting'
+                ? <><RefreshCw size={12} className="spin" />{t.home_starting}</>
+                : <><Power size={12} />{t.home_start}</>}
             </button>
           )}
           {status === 'running' && (
             <button onClick={handleStop} disabled={action !== 'idle'} className="btn-secondary"
-              style={{ padding: '6px 14px', fontSize: '0.82rem' }}>
-              {action === 'stopping' ? t.home_stopping : t.home_stop}
+              style={{ padding: '8px 14px', fontSize: '0.82rem', gap: 6, display: 'inline-flex', alignItems: 'center' }}>
+              {action === 'stopping'
+                ? <><RefreshCw size={12} className="spin" />{t.home_stopping}</>
+                : <><Square size={10} fill="currentColor" />{t.home_stop}</>}
             </button>
           )}
           <button onClick={checkStatus} className="btn-ghost" style={{ padding: '6px 8px' }} title="Refresh">
@@ -103,20 +123,31 @@ export default function PageHome({ config }: { config: Record<string, string> })
         ))}
       </div>
 
-      {/* Downloads */}
-      <div className="card-sm" style={{ padding: '10px 16px' }}>
-        <div className="flex items-center justify-between">
+      {/* Downloads + VPN row */}
+      <div className="flex gap-3">
+        <div className="card-sm flex items-center justify-between" style={{ flex: 2, padding: '10px 14px' }}>
           <div className="flex items-center gap-2">
             <Download size={14} strokeWidth={2} style={{ color: 'var(--text-3)' }} />
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-2)' }}>Downloads</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-2)' }}>{t.home_downloads}</span>
           </div>
           <button onClick={() => open(8090)} disabled={status !== 'running'}
-            className="card-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-            style={{ padding: '6px 12px' }}>
-            <ServiceIcon name="qBittorrent" size={18} />
+            className="card-sm flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ padding: '5px 10px' }}>
+            <ServiceIcon name="qBittorrent" size={16} />
             <span className="text-xs font-semibold">qBittorrent</span>
           </button>
         </div>
+
+        <button onClick={onGoToVpn}
+          className="card-sm flex items-center gap-2"
+          style={{ flex: 1, padding: '10px 12px', textAlign: 'left' }}
+        >
+          <ShieldCheck size={13} strokeWidth={2} style={{ color: vpnEnabled ? 'var(--accent)' : 'var(--text-3)', flexShrink: 0 }} />
+          <span className="text-xs font-semibold flex-1" style={{ color: 'var(--text-2)' }}>VPN</span>
+          <span className={`badge ${vpnEnabled ? 'running' : 'stopped'}`} style={{ fontSize: '0.68rem', padding: '2px 8px' }}>
+            {vpnEnabled ? t.vpn_d_enabled : t.vpn_d_disabled}
+          </span>
+        </button>
       </div>
 
       {/* Configuration section */}
@@ -125,7 +156,7 @@ export default function PageHome({ config }: { config: Record<string, string> })
           className="w-full flex items-center justify-between" style={{ padding: '10px 16px' }}>
           <div className="flex items-center gap-2">
             <Settings size={14} strokeWidth={2} style={{ color: 'var(--text-3)' }} />
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-2)' }}>Configuration</span>
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-2)' }}>{t.home_tools}</span>
           </div>
           {showConfig
             ? <ChevronUp size={14} style={{ color: 'var(--text-3)' }} />
@@ -137,9 +168,9 @@ export default function PageHome({ config }: { config: Record<string, string> })
           <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
             {!hintDismissed && (
               <div className="flex items-start justify-between gap-3 rounded-xl"
-                style={{ background: 'rgba(249,115,22,0.07)', border: '1px solid rgba(249,115,22,0.2)', padding: '8px 12px' }}>
+                style={{ background: 'rgba(13,148,136,0.07)', border: '1px solid rgba(13,148,136,0.2)', padding: '8px 12px' }}>
                 <p className="text-xs leading-relaxed" style={{ color: 'var(--accent)' }}>
-                  First time? Open each service and complete the initial setup.
+                  {t.home_tools_hint}
                 </p>
                 <button onClick={dismissHint} className="text-xs shrink-0" style={{ color: 'var(--text-3)' }}>✕</button>
               </div>
@@ -163,13 +194,44 @@ export default function PageHome({ config }: { config: Record<string, string> })
         )}
       </div>
 
-      {/* Data path */}
+      {/* Storage card */}
       {config.DATA_PATH && (
-        <p className="text-xs truncate flex items-center gap-1.5 px-1" style={{ color: 'var(--text-3)' }}>
-          <FolderOpen size={12} strokeWidth={1.75} />
-          {config.DATA_PATH}
-        </p>
+        <div className="card-sm" style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="flex items-center gap-2">
+            <FolderOpen size={14} strokeWidth={1.75} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+            <span className="text-xs truncate font-medium" style={{ color: 'var(--text-2)' }}>{config.DATA_PATH}</span>
+          </div>
+          {diskStats ? (
+            <>
+              <div className="progress-track">
+                <div className="progress-fill" style={{ width: `${((diskStats.totalBytes - diskStats.freeBytes) / diskStats.totalBytes * 100).toFixed(0)}%` }} />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs" style={{ color: 'var(--text-3)' }}>
+                  {formatGB(diskStats.totalBytes - diskStats.freeBytes)} GB used
+                </span>
+                <span className="text-xs font-semibold" style={{ color: 'var(--text-2)' }}>
+                  {formatGB(diskStats.freeBytes)} GB free
+                </span>
+              </div>
+            </>
+          ) : (
+            <span className="text-xs" style={{ color: 'var(--text-3)' }}>…</span>
+          )}
+        </div>
       )}
+
+      {/* Buy Me a Coffee */}
+      <button
+        onClick={() => window.electron.openExternal('https://buymeacoffee.com/danipardo24')}
+        className="flex items-center gap-1.5 px-1 self-start"
+        style={{ color: 'var(--text-3)', fontSize: '0.72rem', background: 'none', border: 'none', cursor: 'pointer', transition: 'color 0.15s', marginTop: 6 }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-3)')}
+      >
+        <Coffee size={11} />
+        Buy me a coffee
+      </button>
     </div>
   );
 }

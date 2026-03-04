@@ -158,6 +158,19 @@ ipcMain.handle('stop-stack', async () => {
   await execAsync('docker compose down', { cwd: composeDir(), env: dockerEnv() });
 });
 
+ipcMain.handle('get-disk-stats', async (_e, folderPath: string) => {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const stats = await (fs as any).statfs(folderPath);
+    return {
+      freeBytes:  stats.bfree  * stats.bsize,
+      totalBytes: stats.blocks * stats.bsize,
+    };
+  } catch {
+    return null;
+  }
+});
+
 // Returns machine's local IPv4 address
 ipcMain.handle('get-local-ip', () => {
   for (const ifaces of Object.values(os.networkInterfaces())) {

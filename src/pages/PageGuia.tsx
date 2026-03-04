@@ -3,7 +3,7 @@ import { CheckCircle2, Circle, ExternalLink, KeyRound } from 'lucide-react';
 import { useT } from '../LangContext';
 import type { Lang } from '../i18n';
 
-const DONE_KEY = 'caliu_guide_done';
+const DONE_KEY = 'moss_guide_done';
 
 type Step = {
   id: string;
@@ -293,7 +293,7 @@ export default function PageGuia() {
 
       {/* Disclaimer */}
       {completedCount < STEPS.length && (
-        <div style={{ padding: '10px 14px', background: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.15)', borderRadius: 10 }}>
+        <div style={{ padding: '10px 14px', background: 'rgba(13,148,136,0.05)', border: '1px solid rgba(13,148,136,0.15)', borderRadius: 10 }}>
           <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>
             {DISCLAIMER[lang]}
           </p>
@@ -305,8 +305,8 @@ export default function PageGuia() {
         <div className="card" style={{
           padding: '28px 24px',
           textAlign: 'center',
-          background: 'linear-gradient(135deg, rgba(249,115,22,0.07) 0%, rgba(251,146,60,0.03) 100%)',
-          border: '1px solid rgba(249,115,22,0.22)',
+          background: 'linear-gradient(135deg, rgba(13,148,136,0.07) 0%, rgba(20,184,166,0.03) 100%)',
+          border: '1px solid rgba(13,148,136,0.22)',
           animation: 'slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1)',
           position: 'relative',
           overflow: 'hidden',
