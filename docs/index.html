@@ -110,10 +110,16 @@
     .nav-bmc:hover { color: var(--text); }
 
     /* ─── Lang switcher ───────────────────────────────────────────────── */
-    .lang-switch { display: flex; align-items: center; gap: 3px; }
-    .lang-btn { background: none; border: 1.5px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 0.7rem; font-weight: 700; color: var(--text-2); cursor: pointer; font-family: inherit; letter-spacing: 0.04em; transition: all 0.15s; }
-    .lang-btn:hover { color: var(--text); border-color: rgba(0,0,0,0.2); }
-    .lang-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .lang-dropdown { position: relative; display: flex; align-items: center; }
+    .lang-trigger { display: flex; align-items: center; gap: 5px; background: none; border: 1.5px solid var(--border); border-radius: 8px; padding: 5px 10px; font-size: 0.72rem; font-weight: 700; color: var(--text-2); cursor: pointer; font-family: inherit; letter-spacing: 0.04em; transition: all 0.15s; }
+    .lang-trigger:hover { color: var(--text); border-color: rgba(0,0,0,0.2); }
+    .lang-trigger svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
+    .lang-dropdown.open .lang-trigger svg { transform: rotate(180deg); }
+    .lang-popover { position: absolute; top: calc(100% + 6px); right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow-md); overflow: hidden; min-width: 72px; display: none; z-index: 300; }
+    .lang-dropdown.open .lang-popover { display: block; }
+    .lang-opt { display: flex; align-items: center; justify-content: center; width: 100%; padding: 8px 16px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em; color: var(--text-2); background: none; border: none; cursor: pointer; font-family: inherit; transition: all 0.12s; }
+    .lang-opt:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+    .lang-opt.active { color: var(--accent); }
 
     /* ─── Hero ────────────────────────────────────────────────────────── */
     .hero {
@@ -277,10 +283,16 @@
       <a href="guia.html" data-i18n="nav_guide">Guia</a>
       <a href="https://github.com/Pardo24/Moss" target="_blank">GitHub</a>
       <div class="nav-sep"></div>
-      <div class="lang-switch">
-        <button class="lang-btn" data-lang="ca" onclick="setLang('ca')">CA</button>
-        <button class="lang-btn" data-lang="es" onclick="setLang('es')">ES</button>
-        <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+      <div class="lang-dropdown" id="langDropdown">
+        <button class="lang-trigger" onclick="toggleLangDropdown()" id="langTrigger">
+          <span id="langLabel">CA</span>
+          <svg viewBox="0 0 10 6"><polyline points="1,1 5,5 9,1"/></svg>
+        </button>
+        <div class="lang-popover">
+          <button class="lang-opt" data-lang="ca" onclick="setLang('ca')">CA</button>
+          <button class="lang-opt" data-lang="es" onclick="setLang('es')">ES</button>
+          <button class="lang-opt" data-lang="en" onclick="setLang('en')">EN</button>
+        </div>
       </div>
     </nav>
 
@@ -794,10 +806,24 @@ function applyLang(lang) {
     const v = t[el.dataset.i18n];
     if (v !== undefined) el.innerHTML = v;
   });
-  document.querySelectorAll('.lang-btn').forEach(btn => {
+  const label = document.getElementById('langLabel');
+  if (label) label.textContent = lang.toUpperCase();
+  document.querySelectorAll('.lang-opt').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.lang === lang);
   });
+  closeLangDropdown();
 }
+
+function toggleLangDropdown() {
+  document.getElementById('langDropdown').classList.toggle('open');
+}
+function closeLangDropdown() {
+  document.getElementById('langDropdown').classList.remove('open');
+}
+document.addEventListener('mousedown', e => {
+  const dd = document.getElementById('langDropdown');
+  if (dd && !dd.contains(e.target)) closeLangDropdown();
+});
 
 function setLang(lang) { applyLang(lang); }
 
