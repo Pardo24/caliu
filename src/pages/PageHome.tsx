@@ -1,24 +1,32 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, FolderOpen } from 'lucide-react';
+import { RefreshCw, FolderOpen, Settings, ChevronDown, ChevronUp, Download } from 'lucide-react';
 import { useT } from '../LangContext';
-import ServiceIcon, { type ServiceName } from '../components/ServiceIcon';
-
-const SERVICES: { name: ServiceName; port: number; sub: (t: Record<string, string>) => string }[] = [
-  { name: 'Jellyfin',    port: 8096, sub: t => t.done_cinema },
-  { name: 'Jellyseerr',  port: 5055, sub: t => t.done_request },
-  { name: 'Radarr',      port: 7878, sub: t => t.done_movies },
-  { name: 'Sonarr',      port: 8989, sub: t => t.done_series },
-  { name: 'Prowlarr',    port: 9696, sub: () => 'Indexers' },
-  { name: 'qBittorrent', port: 8090, sub: () => 'Downloads' },
-];
+import ServiceIcon from '../components/ServiceIcon';
 
 type Status = 'checking' | 'running' | 'stopped';
-type Action = 'idle' | 'starting' | 'stopping';
+type Action  = 'idle' | 'starting' | 'stopping';
+
+const CONFIG_DISMISSED_KEY = 'caliu_config_hint_dismissed';
+
+function StatusDot({ status }: { status: Status }) {
+  const color = status === 'running' ? '#22c55e' : status === 'stopped' ? '#ef4444' : '#eab308';
+  return (
+    <span style={{
+      width: 8, height: 8, borderRadius: '50%', background: color,
+      display: 'inline-block', flexShrink: 0,
+      boxShadow: `0 0 6px ${color}88`,
+    }} />
+  );
+}
 
 export default function PageHome({ config }: { config: Record<string, string> }) {
   const { t } = useT();
-  const [status, setStatus] = useState<Status>('checking');
-  const [action, setAction] = useState<Action>('idle');
+  const [status, setStatus]   = useState<Status>('checking');
+  const [action, setAction]   = useState<Action>('idle');
+  const [showConfig, setShowConfig] = useState(false);
+  const [hintDismissed, setHintDismissed] = useState(
+    () => localStorage.getItem(CONFIG_DISMISSED_KEY) === 'true'
+  );
 
   const checkStatus = async () => {
     const s = await window.electron.getStatus();
@@ -41,59 +49,124 @@ export default function PageHome({ config }: { config: Record<string, string> })
 
   const open = (port: number) => window.electron.openExternal(`http://localhost:${port}`);
 
+  const dismissHint = () => {
+    localStorage.setItem(CONFIG_DISMISSED_KEY, 'true');
+    setHintDismissed(true);
+  };
+
   return (
-    <div className="p-5 flex flex-col gap-4">
+    <div className="flex flex-col gap-3 pt-5 px-5 pb-5">
+
       {/* Status bar */}
-      <div className="card-sm flex items-center justify-between px-4 py-3">
+      <div className="card-sm flex items-center justify-between" style={{ padding: '10px 16px' }}>
         <span className={`badge ${status}`}>
           {status === 'running' ? t.home_running : status === 'stopped' ? t.home_stopped : t.home_checking}
         </span>
         <div className="flex items-center gap-2">
           {status !== 'running' && (
-            <button
-              onClick={handleStart}
-              disabled={action !== 'idle'}
-              className="btn-primary"
-              style={{ padding: '7px 18px', minWidth: 'unset', fontSize: '0.82rem' }}
-            >
+            <button onClick={handleStart} disabled={action !== 'idle'} className="btn-primary"
+              style={{ padding: '6px 18px', minWidth: 'unset', fontSize: '0.82rem' }}>
               {action === 'starting' ? t.home_starting : t.home_start}
             </button>
           )}
           {status === 'running' && (
-            <button
-              onClick={handleStop}
-              disabled={action !== 'idle'}
-              className="btn-secondary"
-              style={{ padding: '7px 16px', fontSize: '0.82rem' }}
-            >
+            <button onClick={handleStop} disabled={action !== 'idle'} className="btn-secondary"
+              style={{ padding: '6px 14px', fontSize: '0.82rem' }}>
               {action === 'stopping' ? t.home_stopping : t.home_stop}
             </button>
           )}
-          <button onClick={checkStatus} className="btn-ghost" style={{ padding: '7px 10px' }} title="Refresh">
-            <RefreshCw size={14} strokeWidth={2} />
+          <button onClick={checkStatus} className="btn-ghost" style={{ padding: '6px 8px' }} title="Refresh">
+            <RefreshCw size={13} strokeWidth={2} />
           </button>
         </div>
       </div>
 
-      {/* Service grid */}
-      <div className="grid grid-cols-3 gap-2.5">
-        {SERVICES.map(s => (
-          <button
-            key={s.name}
-            onClick={() => open(s.port)}
-            disabled={status !== 'running'}
-            className="card-sm flex flex-col items-center gap-1.5 p-3 transition-all hover:shadow-md disabled:opacity-40 disabled:cursor-not-allowed"
+      {/* Primary actions */}
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { port: 8096, name: 'Jellyfin'   as const, label: t.done_cinema  },
+          { port: 5055, name: 'Jellyseerr' as const, label: t.done_request },
+        ].map(s => (
+          <button key={s.name} onClick={() => open(s.port)} disabled={status !== 'running'}
+            className="card flex flex-col items-center disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ padding: '20px 12px 14px', gap: 10, position: 'relative' }}
           >
-            <ServiceIcon name={s.name} size={28} />
-            <span className="font-semibold text-xs">{s.name}</span>
-            <span className="text-xs" style={{ color: 'var(--text-3)' }}>{s.sub(t as never)}</span>
+            <span style={{ position: 'absolute', top: 10, right: 10 }}>
+              <StatusDot status={status} />
+            </span>
+            <ServiceIcon name={s.name} size={40} />
+            <div style={{ textAlign: 'center' }}>
+              <p className="font-bold text-sm">{s.name}</p>
+              <p className="text-xs" style={{ color: 'var(--text-3)', marginTop: 1 }}>{s.label}</p>
+            </div>
           </button>
         ))}
       </div>
 
+      {/* Downloads */}
+      <div className="card-sm" style={{ padding: '10px 16px' }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Download size={14} strokeWidth={2} style={{ color: 'var(--text-3)' }} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-2)' }}>Downloads</span>
+          </div>
+          <button onClick={() => open(8090)} disabled={status !== 'running'}
+            className="card-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ padding: '6px 12px' }}>
+            <ServiceIcon name="qBittorrent" size={18} />
+            <span className="text-xs font-semibold">qBittorrent</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Configuration section */}
+      <div className="card-sm overflow-hidden">
+        <button onClick={() => setShowConfig(v => !v)}
+          className="w-full flex items-center justify-between" style={{ padding: '10px 16px' }}>
+          <div className="flex items-center gap-2">
+            <Settings size={14} strokeWidth={2} style={{ color: 'var(--text-3)' }} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--text-2)' }}>Configuration</span>
+          </div>
+          {showConfig
+            ? <ChevronUp size={14} style={{ color: 'var(--text-3)' }} />
+            : <ChevronDown size={14} style={{ color: 'var(--text-3)' }} />
+          }
+        </button>
+
+        {showConfig && (
+          <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {!hintDismissed && (
+              <div className="flex items-start justify-between gap-3 rounded-xl"
+                style={{ background: 'rgba(249,115,22,0.07)', border: '1px solid rgba(249,115,22,0.2)', padding: '8px 12px' }}>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--accent)' }}>
+                  First time? Open each service and complete the initial setup.
+                </p>
+                <button onClick={dismissHint} className="text-xs shrink-0" style={{ color: 'var(--text-3)' }}>✕</button>
+              </div>
+            )}
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { name: 'Radarr'   as const, port: 7878, sub: t.done_movies },
+                { name: 'Sonarr'   as const, port: 8989, sub: t.done_series },
+                { name: 'Prowlarr' as const, port: 9696, sub: 'Indexers'    },
+              ]).map(s => (
+                <button key={s.name} onClick={() => open(s.port)} disabled={status !== 'running'}
+                  className="card-sm flex flex-col items-center disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ padding: '10px 4px 8px', gap: 5 }}>
+                  <ServiceIcon name={s.name} size={22} />
+                  <span className="font-semibold text-xs">{s.name}</span>
+                  <span className="text-xs" style={{ color: 'var(--text-3)' }}>{s.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Data path */}
       {config.DATA_PATH && (
-        <p className="text-xs truncate flex items-center gap-1.5" style={{ color: 'var(--text-3)' }}>
-          <FolderOpen size={13} strokeWidth={1.75} />
+        <p className="text-xs truncate flex items-center gap-1.5 px-1" style={{ color: 'var(--text-3)' }}>
+          <FolderOpen size={12} strokeWidth={1.75} />
           {config.DATA_PATH}
         </p>
       )}

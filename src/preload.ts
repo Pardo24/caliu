@@ -13,4 +13,5 @@ contextBridge.exposeInMainWorld('electron', {
   getLocalIp:   ()                  => ipcRenderer.invoke('get-local-ip'),
   resetInstall: ()                  => ipcRenderer.invoke('reset-install'),
   openExternal: (url: string)       => ipcRenderer.invoke('open-external', url),
+  getVersion:   ()                  => ipcRenderer.invoke('get-version'),
 });

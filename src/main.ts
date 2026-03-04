@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog, shell, Menu } from 'electron';
 import path from 'node:path';
 import os from 'node:os';
+import http from 'node:http';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
@@ -17,10 +18,10 @@ const execAsync = promisify(exec);
 
 const createWindow = () => {
   const win = new BrowserWindow({
-    width: 760,
-    height: 560,
+    width: 780,
+    height: 580,
     resizable: false,
-    backgroundColor: '#0f0f0f',
+    backgroundColor: '#ffffff',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -38,6 +39,47 @@ const createWindow = () => {
 app.on('ready', createWindow);
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+
+// ── Jellyfin auto-setup ───────────────────────────────────────
+
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+function jellyfinGet(path: string, port: number): Promise<number> {
+  return new Promise(resolve => {
+    http.get({ hostname: 'localhost', port, path }, res => {
+      res.resume();
+      resolve(res.statusCode ?? 0);
+    }).on('error', () => resolve(0));
+  });
+}
+
+function jellyfinPost(path: string, port: number, body: object): Promise<number> {
+  return new Promise(resolve => {
+    const data = JSON.stringify(body);
+    const req = http.request({
+      hostname: 'localhost', port, path, method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
+    }, res => { res.resume(); resolve(res.statusCode ?? 0); });
+    req.on('error', () => resolve(0));
+    req.write(data);
+    req.end();
+  });
+}
+
+async function configureJellyfin(port: number, adminPassword: string): Promise<void> {
+  // Wait up to 2 minutes for Jellyfin to be ready
+  for (let i = 0; i < 24; i++) {
+    const status = await jellyfinGet('/health', port);
+    if (status === 200) break;
+    await sleep(5000);
+  }
+  // Skip if wizard already completed (returns 4xx)
+  const check = await jellyfinGet('/Startup/Configuration', port);
+  if (check !== 200) return;
+
+  await jellyfinPost('/Startup/User', port, { Name: 'admin', Password: adminPassword, PasswordConf: adminPassword });
+  await jellyfinPost('/Startup/Complete', port, {});
+}
 
 // ── Helpers ───────────────────────────────────────────────────
 
@@ -70,6 +112,8 @@ function parseEnv(content: string): Record<string, string> {
 }
 
 // ── IPC Handlers ─────────────────────────────────────────────
+
+ipcMain.handle('get-version', () => app.getVersion());
 
 ipcMain.handle('check-docker', async () => {
   try { await execAsync('docker info', { env: dockerEnv() }); return true; }
@@ -168,6 +212,7 @@ ipcMain.handle('install', async (_e, config: {
   await fs.copyFile(src, path.join(dir, 'docker-compose.yml'));
 
   await execAsync('docker compose up -d', { cwd: dir, env: dockerEnv() });
+  try { await configureJellyfin(8096, adminPassword); } catch { /* ignore */ }
 });
 
 ipcMain.handle('add-vpn', async (_e, { mullvadKey, mullvadAddress }: { mullvadKey: string; mullvadAddress: string }) => {

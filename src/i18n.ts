@@ -86,6 +86,7 @@ const tr = {
     nav_vpn: 'VPN',
     nav_network: 'Xarxa',
     nav_settings: 'Config',
+    nav_guide: 'Guia',
 
     // ── Home page ─────────────────────────────────────────────
     home_running: 'En marxa',
@@ -97,9 +98,9 @@ const tr = {
     home_stopping: 'Parant...',
 
     // ── VPN management page ───────────────────────────────────
-    vpn_d_enabled: '✅ VPN activa (Mullvad)',
+    vpn_d_enabled: '✅ VPN activa',
     vpn_d_disabled: 'Sense VPN',
-    vpn_d_add_title: 'Activar Mullvad VPN',
+    vpn_d_add_title: 'Activar VPN',
     vpn_d_add_desc: 'Ves a mullvad.net → Dispositius WireGuard i copia les dades:',
     vpn_d_enable_btn: 'Activar VPN',
     vpn_d_disable_btn: 'Desactivar VPN',
@@ -107,6 +108,12 @@ const tr = {
     vpn_d_applying: 'Aplicant...',
     vpn_d_success: '✅ Canvis aplicats correctament',
     vpn_d_error: 'Error. Revisa les claus i torna-ho a intentar.',
+    vpn_why_title: 'Per què usar una VPN?',
+    vpn_why_1: 'Xifra el tràfic — el teu ISP no pot veure el que descarregues.',
+    vpn_why_2: "Evita el throttling de l'ISP en connexions P2P.",
+    vpn_why_3: 'Amaga la teva IP als altres usuaris del enjambre.',
+    vpn_why_4: 'Només afecta les descàrregues — la navegació normal no es toca.',
+    vpn_compatible: 'Compatible amb qualsevol proveïdor WireGuard VPN (Mullvad, IVPN, ProtonVPN…)',
 
     // ── Network page ──────────────────────────────────────────
     net_title: 'Accés a la xarxa',
@@ -216,6 +223,7 @@ const tr = {
     nav_vpn: 'VPN',
     nav_network: 'Red',
     nav_settings: 'Config',
+    nav_guide: 'Guía',
 
     home_running: 'En marcha',
     home_stopped: 'Detenido',
@@ -225,9 +233,9 @@ const tr = {
     home_starting: 'Iniciando...',
     home_stopping: 'Deteniendo...',
 
-    vpn_d_enabled: '✅ VPN activa (Mullvad)',
+    vpn_d_enabled: '✅ VPN activa',
     vpn_d_disabled: 'Sin VPN',
-    vpn_d_add_title: 'Activar Mullvad VPN',
+    vpn_d_add_title: 'Activar VPN',
     vpn_d_add_desc: 'Ve a mullvad.net → Dispositivos WireGuard y copia los datos:',
     vpn_d_enable_btn: 'Activar VPN',
     vpn_d_disable_btn: 'Desactivar VPN',
@@ -235,6 +243,12 @@ const tr = {
     vpn_d_applying: 'Aplicando...',
     vpn_d_success: '✅ Cambios aplicados correctamente',
     vpn_d_error: 'Error. Revisa las claves e inténtalo de nuevo.',
+    vpn_why_title: '¿Por qué usar una VPN?',
+    vpn_why_1: 'Cifra tu tráfico — tu ISP no puede ver lo que descargas.',
+    vpn_why_2: 'Evita el throttling de tu ISP en conexiones P2P.',
+    vpn_why_3: 'Oculta tu IP al resto de usuarios del enjambre.',
+    vpn_why_4: 'Solo afecta las descargas — tu navegación normal no se ve afectada.',
+    vpn_compatible: 'Compatible con cualquier proveedor WireGuard VPN (Mullvad, IVPN, ProtonVPN…)',
 
     net_title: 'Acceso a la red',
     net_local_title: 'Red local (Wi-Fi)',
@@ -342,6 +356,7 @@ const tr = {
     nav_vpn: 'VPN',
     nav_network: 'Network',
     nav_settings: 'Settings',
+    nav_guide: 'Guide',
 
     home_running: 'Running',
     home_stopped: 'Stopped',
@@ -351,9 +366,9 @@ const tr = {
     home_starting: 'Starting...',
     home_stopping: 'Stopping...',
 
-    vpn_d_enabled: '✅ VPN active (Mullvad)',
+    vpn_d_enabled: '✅ VPN active',
     vpn_d_disabled: 'No VPN',
-    vpn_d_add_title: 'Enable Mullvad VPN',
+    vpn_d_add_title: 'Enable VPN',
     vpn_d_add_desc: 'Go to mullvad.net → WireGuard Devices and paste the details:',
     vpn_d_enable_btn: 'Enable VPN',
     vpn_d_disable_btn: 'Disable VPN',
@@ -361,6 +376,12 @@ const tr = {
     vpn_d_applying: 'Applying...',
     vpn_d_success: '✅ Changes applied successfully',
     vpn_d_error: 'Error. Check your keys and try again.',
+    vpn_why_title: 'Why use a VPN?',
+    vpn_why_1: 'Encrypts your traffic — your ISP cannot see what you download.',
+    vpn_why_2: 'Prevents ISP throttling on P2P connections.',
+    vpn_why_3: 'Hides your IP from other peers in the swarm.',
+    vpn_why_4: 'Only affects downloads — your normal browsing is untouched.',
+    vpn_compatible: 'Compatible with any WireGuard VPN provider (Mullvad, IVPN, ProtonVPN…)',
 
     net_title: 'Network access',
     net_local_title: 'Local network (Wi-Fi)',

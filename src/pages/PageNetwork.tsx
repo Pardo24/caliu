@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useT } from '../LangContext';
+import ServiceIcon, { type ServiceName } from '../components/ServiceIcon';
 
-const SERVICES = [
+const SERVICES: { name: ServiceName; port: number }[] = [
   { name: 'Jellyfin',    port: 8096 },
   { name: 'Jellyseerr',  port: 5055 },
   { name: 'Radarr',      port: 7878 },
@@ -26,12 +27,12 @@ export default function PageNetwork({ config: _config }: { config: Record<string
   };
 
   return (
-    <div className="p-5 flex flex-col gap-5">
+    <div className="flex flex-col gap-5 pt-6 px-5 pb-5">
       {/* Local IP */}
       <div>
         <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-2)' }}>{t.net_local_title}</p>
         <p className="text-xs mb-3" style={{ color: 'var(--text-3)' }}>{t.net_local_desc}</p>
-        <div className="card-sm flex items-center gap-3 px-4 py-3">
+        <div className="card-sm flex items-center gap-3" style={{ padding: '12px 16px' }}>
           <span className="text-xs font-medium" style={{ color: 'var(--text-2)' }}>{t.net_ip_label}</span>
           <span className="font-mono text-sm flex-1 font-semibold" style={{ color: 'var(--accent)' }}>{ip}</span>
           <button onClick={() => copy(ip, 'ip')} className="btn-ghost" style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
@@ -47,8 +48,9 @@ export default function PageNetwork({ config: _config }: { config: Record<string
           {SERVICES.map(s => {
             const url = `http://${ip}:${s.port}`;
             return (
-              <div key={s.name} className="card-sm flex items-center gap-3 px-4 py-2.5">
-                <span className="text-xs font-medium shrink-0" style={{ width: 90, color: 'var(--text-2)' }}>{s.name}</span>
+              <div key={s.name} className="card-sm flex items-center gap-3" style={{ padding: '10px 16px' }}>
+                <ServiceIcon name={s.name} size={18} />
+                <span className="text-xs font-medium shrink-0" style={{ width: 80, color: 'var(--text-2)' }}>{s.name}</span>
                 <button
                   onClick={() => window.electron.openExternal(url)}
                   className="font-mono text-xs flex-1 text-left truncate"
@@ -66,7 +68,7 @@ export default function PageNetwork({ config: _config }: { config: Record<string
       </div>
 
       {/* External access — Tailscale */}
-      <div className="card p-5 space-y-3">
+      <div className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         <h3 className="font-semibold text-sm">{t.net_external_title}</h3>
         <p className="text-xs leading-relaxed" style={{ color: 'var(--text-2)' }}>{t.net_external_desc}</p>
         <button

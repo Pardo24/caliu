@@ -15,6 +15,7 @@ declare global {
       resetInstall:   () => Promise<void>;
       addVpn:         (cfg: { mullvadKey: string; mullvadAddress: string }) => Promise<void>;
       removeVpn:      () => Promise<void>;
+      getVersion:     () => Promise<string>;
     };
   }
 }
