@@ -69,6 +69,7 @@ services:
       PUID: 1000
       PGID: 1000
       TZ: ${TZ:-Europe/Madrid}
+      X_API_KEY: ${PROWLARR_API_KEY}
     deploy:
       resources:
         limits:
@@ -91,6 +92,7 @@ services:
       PUID: 1000
       PGID: 1000
       TZ: ${TZ:-Europe/Madrid}
+      X_API_KEY: ${RADARR_API_KEY}
     deploy:
       resources:
         limits:
@@ -113,6 +115,7 @@ services:
       PUID: 1000
       PGID: 1000
       TZ: ${TZ:-Europe/Madrid}
+      X_API_KEY: ${SONARR_API_KEY}
     deploy:
       resources:
         limits:
@@ -135,6 +138,7 @@ services:
       PUID: 1000
       PGID: 1000
       TZ: ${TZ:-Europe/Madrid}
+      X_API_KEY: ${LIDARR_API_KEY}
     deploy:
       resources:
         limits:

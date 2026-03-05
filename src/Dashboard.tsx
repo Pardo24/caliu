@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Home, Globe, Settings, ListChecks, ChevronUp, Coffee } from 'lucide-react';
+import { Home, Globe, Settings, ListChecks, ChevronUp, Coffee, Download } from 'lucide-react';
 import { useT } from './LangContext';
 import type { Lang } from './i18n';
 import appIcon from '../assets/icons/icons/png/64x64.png';
@@ -7,9 +7,10 @@ import PageHome from './pages/PageHome';
 import PageNetwork from './pages/PageNetwork';
 import PageSettings from './pages/PageSettings';
 import PageGuia from './pages/PageGuia';
+import PageDownloads from './pages/PageDownloads';
 import OnboardingWizard from './components/OnboardingWizard';
 
-type Page = 'home' | 'network' | 'settings' | 'guide';
+type Page = 'home' | 'network' | 'downloads' | 'settings' | 'guide';
 
 const LANGS: { code: Lang; label: string }[] = [
   { code: 'ca', label: 'CA' },
@@ -32,10 +33,11 @@ export default function Dashboard({ initialConfig, onReinstall }: Props) {
   );
 
   const navItems: { id: Page; icon: React.ReactNode; label: string }[] = [
-    { id: 'home',     icon: <Home        size={18} strokeWidth={1.75} />, label: t.nav_home },
-    { id: 'network',  icon: <Globe       size={18} strokeWidth={1.75} />, label: t.nav_network },
-    { id: 'guide',    icon: <ListChecks  size={18} strokeWidth={1.75} />, label: t.nav_guide },
-    { id: 'settings', icon: <Settings    size={18} strokeWidth={1.75} />, label: t.nav_settings },
+    { id: 'home',      icon: <Home       size={18} strokeWidth={1.75} />, label: t.nav_home },
+    { id: 'network',   icon: <Globe      size={18} strokeWidth={1.75} />, label: t.nav_network },
+    { id: 'downloads', icon: <Download   size={18} strokeWidth={1.75} />, label: t.nav_downloads },
+    { id: 'guide',     icon: <ListChecks size={18} strokeWidth={1.75} />, label: t.nav_guide },
+    { id: 'settings',  icon: <Settings   size={18} strokeWidth={1.75} />, label: t.nav_settings },
   ];
 
   const [langOpen, setLangOpen] = useState(false);
@@ -129,10 +131,11 @@ export default function Dashboard({ initialConfig, onReinstall }: Props) {
       <div className="flex-1 flex flex-col overflow-hidden" style={{ background: 'rgba(246,248,255,0.55)', position: 'relative' }}>
         <div style={{ height: '1px', background: 'var(--border)', flexShrink: 0 }} />
         <div className="flex-1 overflow-y-auto">
-          {page === 'home'     && <PageHome config={config} onGoToVpn={goToVpn} />}
-          {page === 'network'  && <PageNetwork config={config} onChanged={refreshConfig} scrollToVpn={scrollToVpn} />}
-          {page === 'guide'    && <PageGuia />}
-          {page === 'settings' && <PageSettings config={config} onReinstall={onReinstall} />}
+          {page === 'home'      && <PageHome config={config} onGoToVpn={goToVpn} />}
+          {page === 'network'   && <PageNetwork config={config} onChanged={refreshConfig} scrollToVpn={scrollToVpn} />}
+          {page === 'downloads' && <PageDownloads config={config} />}
+          {page === 'guide'     && <PageGuia />}
+          {page === 'settings'  && <PageSettings config={config} onReinstall={onReinstall} />}
         </div>
         {showWizard && (
           <OnboardingWizard

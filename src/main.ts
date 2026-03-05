@@ -2,11 +2,13 @@ import { app, BrowserWindow, ipcMain, dialog, shell, Menu } from 'electron';
 import path from 'node:path';
 import os from 'node:os';
 import http from 'node:http';
+import crypto from 'node:crypto';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import fs from 'node:fs/promises';
 import started from 'electron-squirrel-startup';
 import { updateElectronApp } from 'update-electron-app';
+import { runAutoSetup } from './autoSetup';
 
 if (started) app.quit();
 
@@ -188,35 +190,48 @@ ipcMain.handle('reset-install', async () => {
   await fs.rm(dir, { recursive: true, force: true });
 });
 
-ipcMain.handle('install', async (_e, config: {
-  dataPath: string; adminPassword: string;
+ipcMain.handle('install', async (event, config: {
+  dataPath: string; adminPassword: string; subtitleLangs: string[];
   vpnEnabled: boolean; mullvadKey: string; mullvadAddress: string;
 }) => {
-  const { dataPath, adminPassword, vpnEnabled, mullvadKey, mullvadAddress } = config;
+  const { dataPath, adminPassword, subtitleLangs, vpnEnabled, mullvadKey, mullvadAddress } = config;
+  const progress = (step: number) => { try { event.sender.send('install-progress', step); } catch { /* window may be closing */ } };
 
+  // Step 0: Create directories
+  progress(0);
   const dirs = [
-    'jellyfin/config', 'jellyfin/cache',
-    'jellyfin/media/movies', 'jellyfin/media/series', 'jellyfin/media/music',
-    'downloads', 'prowlarr/config', 'radarr/config', 'sonarr/config',
-    'lidarr/config', 'bazarr/config', 'qbittorrent/config', 'jellyseerr/config',
+    'jellyfin/media/movies', 'jellyfin/media/series', 'jellyfin/media/music', 'downloads',
   ];
-  for (const dir of dirs) await fs.mkdir(path.join(dataPath, dir), { recursive: true });
+  for (const d of dirs) await fs.mkdir(path.join(dataPath, d), { recursive: true });
+
+  // Step 1: Generate config + .env
+  progress(1);
+  const apiKeys = {
+    radarr:   crypto.randomBytes(16).toString('hex'),
+    sonarr:   crypto.randomBytes(16).toString('hex'),
+    lidarr:   crypto.randomBytes(16).toString('hex'),
+    prowlarr: crypto.randomBytes(16).toString('hex'),
+  };
 
   const dir = composeDir();
   await fs.mkdir(dir, { recursive: true });
 
-  const envContent = [
+  const envLines = [
     `DATA_PATH=${dataPath.replace(/\\/g, '/')}`,
     `TZ=Europe/Madrid`,
     `JELLYFIN_PORT=8096`, `JELLYSEERR_PORT=5055`, `PROWLARR_PORT=9696`,
     `RADARR_PORT=7878`, `SONARR_PORT=8989`, `LIDARR_PORT=8686`,
     `BAZARR_PORT=6767`, `QBIT_PORT=8090`,
     `JELLYFIN_ADMIN_PASSWORD=${adminPassword}`,
+    `RADARR_API_KEY=${apiKeys.radarr}`,
+    `SONARR_API_KEY=${apiKeys.sonarr}`,
+    `LIDARR_API_KEY=${apiKeys.lidarr}`,
+    `PROWLARR_API_KEY=${apiKeys.prowlarr}`,
     vpnEnabled ? `MULLVAD_PRIVATE_KEY=${mullvadKey}` : '',
     vpnEnabled ? `MULLVAD_ADDRESSES=${mullvadAddress}` : '',
   ].filter(Boolean).join('\n');
 
-  await fs.writeFile(path.join(dir, '.env'), envContent);
+  await fs.writeFile(path.join(dir, '.env'), envLines);
 
   const composeFile = vpnEnabled ? 'docker-compose.yml' : 'docker-compose-novpn.yml';
   const src = app.isPackaged
@@ -224,8 +239,27 @@ ipcMain.handle('install', async (_e, config: {
     : path.join(__dirname, `../../stack/${composeFile}`);
   await fs.copyFile(src, path.join(dir, 'docker-compose.yml'));
 
+  // Step 2: Pull + start containers
+  progress(2);
   await execAsync('docker compose up -d', { cwd: dir, env: dockerEnv() });
-  try { await configureJellyfin(8096, adminPassword); } catch { /* ignore */ }
+
+  // Step 3 (via autoSetup): Jellyfin wizard
+  progress(3);
+  try { await configureJellyfin(8096, adminPassword); } catch { /* best-effort */ }
+
+  // Steps 4–10: Auto-configure remaining services
+  await runAutoSetup({
+    adminPassword,
+    subtitleLangs: subtitleLangs ?? [],
+    apiKeys,
+    ports: {
+      jellyfin: 8096, radarr: 7878, sonarr: 8989, lidarr: 8686,
+      prowlarr: 9696, bazarr: 6767, qbit: 8090, jellyseerr: 5055,
+    },
+    vpnEnabled,
+    dockerEnvObj: dockerEnv(),
+    onProgress: progress,
+  });
 });
 
 ipcMain.handle('add-vpn', async (_e, { mullvadKey, mullvadAddress }: { mullvadKey: string; mullvadAddress: string }) => {

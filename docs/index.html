@@ -95,7 +95,7 @@
     .header-inner { height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
     .logo { display: flex; align-items: center; gap: 10px; font-weight: 900; font-size: 1.25rem; letter-spacing: -0.02em; color: var(--text); }
     .logo-mark { width: 36px; height: 36px; border-radius: 10px; background: var(--accent-g); display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 12px rgba(13,148,136,0.32); flex-shrink: 0; }
-    .logo-mark img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; mix-blend-mode: screen; }
+    .logo-mark img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
     nav { display: flex; align-items: center; gap: 28px; }
     nav a { font-size: 0.88rem; font-weight: 500; color: var(--text-2); transition: color 0.15s; }
     nav a:hover { color: var(--text); }
@@ -572,7 +572,7 @@
       <div class="card fade-up">
         <div class="feature-icon fi-blue"><i data-lucide="zap"></i></div>
         <div class="feature-title" data-i18n="feat4_title">Instal·lació en 1 clic</div>
-        <div class="feature-desc" data-i18n="feat4_desc">L'assistent de Gecko configura tota la infraestructura Docker automàticament. Sense fitxers de configuració, sense comandes de terminal.</div>
+        <div class="feature-desc" data-i18n="feat4_desc">L'assistent configura tota la infraestructura Docker i connecta tots els serveis automàticament — Prowlarr, Radarr, Sonarr, Bazarr i qBittorrent llestos sense tocar res.</div>
       </div>
       <div class="card fade-up delay-1">
         <div class="feature-icon fi-rose"><i data-lucide="panel-left"></i></div>
@@ -802,7 +802,7 @@ const i18n = {
     feat1_title:"El teu propi Netflix", feat1_desc:"Jellyfin t'ofereix una interfície elegant per veure pel·lícules i sèries des de qualsevol dispositiu — TV, mòbil, tablet, navegador.",
     feat2_title:"Accés des de qualsevol lloc", feat2_desc:"Gecko mostra les URLs de tots els serveis per la xarxa local. Per accés extern sense obrir ports, s'integra fàcilment amb Tailscale.",
     feat3_title:"VPN integrada", feat3_desc:"Activa ProtonVPN o Mullvad des del dashboard en un formulari senzill. Les descàrregues passaran per un túnel xifrat automàticament.",
-    feat4_title:"Instal·lació en 1 clic", feat4_desc:"L'assistent de Gecko configura tota la infraestructura Docker automàticament. Sense fitxers de configuració, sense comandes de terminal.",
+    feat4_title:"Instal·lació en 1 clic", feat4_desc:"L'assistent configura tota la infraestructura Docker i connecta tots els serveis automàticament — Prowlarr, Radarr, Sonarr, Bazarr i qBittorrent llestos sense tocar res.",
     feat5_title:"Dashboard de gestió", feat5_desc:"Atura i arrenca el stack, gestiona la VPN, consulta les URLs de la xarxa i configura l'idioma des d'una interfície unificada.",
     feat6_title:"3 idiomes inclosos", feat6_desc:"Gecko és disponible en català, castellà i anglès. Canvia d'idioma en qualsevol moment des del panell lateral, sense reiniciar.",
     how_eyebrow:"Com funciona", how_title:"Llest en 5 minuts",
@@ -857,7 +857,7 @@ const i18n = {
     feat1_title:"Tu propio Netflix", feat1_desc:"Jellyfin te ofrece una interfaz elegante para ver películas y series desde cualquier dispositivo — TV, móvil, tablet, navegador.",
     feat2_title:"Acceso desde cualquier lugar", feat2_desc:"Gecko muestra las URLs de todos los servicios en la red local. Para acceso externo sin abrir puertos, se integra fácilmente con Tailscale.",
     feat3_title:"VPN integrada", feat3_desc:"Activa ProtonVPN o Mullvad desde el dashboard con un formulario sencillo. Las descargas pasarán por un túnel cifrado automáticamente.",
-    feat4_title:"Instalación en 1 clic", feat4_desc:"El asistente de Gecko configura toda la infraestructura Docker automáticamente. Sin archivos de configuración, sin comandos de terminal.",
+    feat4_title:"Instalación en 1 clic", feat4_desc:"El asistente configura toda la infraestructura Docker y conecta todos los servicios automáticamente — Prowlarr, Radarr, Sonarr, Bazarr y qBittorrent listos sin tocar nada.",
     feat5_title:"Panel de gestión", feat5_desc:"Para e inicia el stack, gestiona la VPN, consulta las URLs de la red y configura el idioma desde una interfaz unificada.",
     feat6_title:"3 idiomas incluidos", feat6_desc:"Gecko está disponible en catalán, castellano e inglés. Cambia de idioma en cualquier momento desde el panel lateral, sin reiniciar.",
     how_eyebrow:"Cómo funciona", how_title:"Listo en 5 minutos",
@@ -912,7 +912,7 @@ const i18n = {
     feat1_title:"Your own Netflix", feat1_desc:"Jellyfin gives you an elegant interface to watch movies and shows from any device — TV, phone, tablet, browser.",
     feat2_title:"Access from anywhere", feat2_desc:"Gecko shows the URLs of all services on your local network. For external access without port forwarding, it integrates easily with Tailscale.",
     feat3_title:"Built-in VPN", feat3_desc:"Enable ProtonVPN or Mullvad from the dashboard with a simple form. Downloads will automatically route through an encrypted tunnel.",
-    feat4_title:"1-click installation", feat4_desc:"Gecko's wizard configures all the Docker infrastructure automatically. No config files, no terminal commands.",
+    feat4_title:"1-click installation", feat4_desc:"The wizard configures all Docker infrastructure and connects every service automatically — Prowlarr, Radarr, Sonarr, Bazarr and qBittorrent ready without touching a thing.",
     feat5_title:"Management dashboard", feat5_desc:"Stop and start the stack, manage the VPN, check network URLs and configure language from a unified interface.",
     feat6_title:"3 languages included", feat6_desc:"Gecko is available in Catalan, Spanish and English. Switch language at any time from the side panel, without restarting.",
     how_eyebrow:"How it works", how_title:"Ready in 5 minutes",

@@ -5,20 +5,43 @@ import { useT } from '../LangContext';
 
 type Props = { config: Config; updateConfig: (p: Partial<Config>) => void; next: () => void };
 
+const SUBTITLE_LANGS = [
+  { code: 'ca', label: 'Català' },
+  { code: 'es', label: 'Español' },
+  { code: 'en', label: 'English' },
+  { code: 'fr', label: 'Français' },
+  { code: 'de', label: 'Deutsch' },
+  { code: 'pt', label: 'Português' },
+  { code: 'it', label: 'Italiano' },
+  { code: 'ja', label: '日本語' },
+];
+
 export default function StepAdmin({ config, updateConfig, next }: Props) {
-  const { t } = useT();
+  const { t, lang } = useT();
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState('');
   const [show, setShow] = useState(false);
 
+  const selectedLangs = config.subtitleLangs.length > 0 ? config.subtitleLangs : [lang];
+
+  const toggleLang = (code: string) => {
+    const current = config.subtitleLangs.length > 0 ? config.subtitleLangs : [lang];
+    const updated = current.includes(code)
+      ? current.filter(l => l !== code)
+      : [...current, code];
+    if (updated.length === 0) return; // keep at least one
+    updateConfig({ subtitleLangs: updated });
+  };
+
   const handleNext = () => {
     if (config.adminPassword.length < 6) { setError(t.admin_err_short); return; }
     if (config.adminPassword !== confirm) { setError(t.admin_err_match); return; }
+    if (config.subtitleLangs.length === 0) updateConfig({ subtitleLangs: [lang] });
     next();
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-7 px-8 text-center">
+    <div className="h-full flex flex-col items-center justify-center gap-6 px-8 text-center overflow-y-auto py-6">
       <div className="flex flex-col items-center gap-4">
         <div className="step-icon teal"><Lock size={38} strokeWidth={1.5} /></div>
         <div>
@@ -68,6 +91,35 @@ export default function StepAdmin({ config, updateConfig, next }: Props) {
         </div>
 
         {error && <p className="text-sm text-red-500">{error}</p>}
+      </div>
+
+      {/* Subtitle language selector */}
+      <div style={{ width: 320 }} className="space-y-3 text-left">
+        <div>
+          <p className="text-sm font-semibold">{t.admin_subtitle_title}</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>{t.admin_subtitle_desc}</p>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+          {SUBTITLE_LANGS.map(({ code, label }) => {
+            const active = selectedLangs.includes(code);
+            return (
+              <button
+                key={code}
+                onClick={() => toggleLang(code)}
+                style={{
+                  padding: '5px 12px', borderRadius: 20, fontSize: '0.78rem', fontWeight: 600,
+                  border: active ? '1.5px solid var(--accent)' : '1.5px solid var(--border)',
+                  background: active ? 'rgba(var(--accent-rgb,13,148,136),0.08)' : 'var(--surface)',
+                  color: active ? 'var(--accent)' : 'var(--text-2)',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+        <p className="text-xs" style={{ color: 'var(--text-3)' }}>{t.admin_subtitle_hint}</p>
       </div>
 
       <button onClick={handleNext} disabled={!config.adminPassword || !confirm} className="btn-primary">

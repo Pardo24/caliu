@@ -10,9 +10,10 @@ One installer. Jellyfin, Sonarr, Radarr, Prowlarr, Bazarr, qBittorrent, Jellysee
 ## Features
 
 - **One-click setup** — choose a folder, set a password, done
+- **Auto-configuration** — all services connected automatically (Prowlarr → Radarr/Sonarr/Lidarr, qBittorrent, Jellyseerr, Bazarr)
 - **Full media stack** — movies, series, music, subtitles, requests
 - **VPN built-in** — route downloads through any WireGuard provider
-- **Step-by-step guide** — in-app walkthrough for first-time configuration
+- **Downloads panel** — live progress for Radarr & Sonarr with blocklist & re-search per item
 - **Live status** — see which services are running at a glance
 - **Network panel** — open any service directly from the app
 - **Auto-updates** — always on the latest version

@@ -1,4 +1,4 @@
-import { Shield } from 'lucide-react';
+import { Shield, AlertTriangle } from 'lucide-react';
 import type { Config } from '../App';
 import { useT } from '../LangContext';
 
@@ -26,6 +26,10 @@ export default function StepVpn({ config, updateConfig, next }: Props) {
         >
           <p className="font-semibold">{t.vpn_no}</p>
           <p className="text-sm mt-0.5" style={{ color: 'var(--text-2)' }}>{t.vpn_no_desc}</p>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginTop: 10, padding: '7px 10px', borderRadius: 8, background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.22)' }}>
+            <AlertTriangle size={13} style={{ color: '#ca8a04', flexShrink: 0, marginTop: 1 }} />
+            <p style={{ fontSize: '0.72rem', color: '#92400e', lineHeight: 1.5 }}>{t.vpn_no_warn}</p>
+          </div>
         </button>
 
         {/* Mullvad VPN */}

@@ -284,13 +284,13 @@
       <div class="sidebar-nav-title">Dashboard</div>
       <a href="#menu">El menú lateral</a>
       <a href="#inici">Pàgina Inici</a>
-      <a href="#vpn-page">Pàgina VPN</a>
+      <a href="#vpn-page">Pàgina VPN (Mullvad / ProtonVPN)</a>
       <a href="#xarxa">Pàgina Xarxa</a>
       <a href="#config">Pàgina Config</a>
 
       <div class="sidebar-nav-title">Serveis</div>
       <a href="#serveis">Tots els serveis</a>
-      <a href="#prowlarr">Configurar Prowlarr</a>
+      <a href="#prowlarr">Prowlarr (pas obligatori)</a>
 
       <div class="sidebar-nav-title">Accés extern</div>
       <a href="#acces">Local vs. extern</a>
@@ -353,24 +353,29 @@
       <div class="step-item">
         <div class="step-n">4</div>
         <div class="step-content">
-          <h4>Contrasenya d'administrador</h4>
-          <p>Crea la contrasenya que faràs servir a Jellyfin i altres serveis. L'usuari és sempre <code>admin</code>. Mínim 6 caràcters.</p>
+          <h4>Contrasenya i idioma de subtítols</h4>
+          <p>Crea la contrasenya per als serveis (usuari sempre <code>admin</code>, mínim 6 caràcters). Tria els idiomes de subtítols que vols — Gecko configura Bazarr automàticament amb la teva selecció.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-n">5</div>
         <div class="step-content">
-          <h4>VPN (opcional)</h4>
-          <p>Pots activar una VPN WireGuard (ProtonVPN o Mullvad) per protegir les teves descàrregues. Si no en tens una, selecciona <strong>Sense VPN</strong> i continua — pots afegir-la després des del dashboard.</p>
+          <h4>VPN (recomanada)</h4>
+          <p>Activa una VPN WireGuard (ProtonVPN o Mullvad) per protegir les teves descàrregues. <strong>Sense VPN l'ISP pot detectar el tràfic P2P.</strong> Pots configurar-la després des del dashboard si ho prefereixes.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-n">✓</div>
         <div class="step-content">
-          <h4>Instal·lació automàtica</h4>
-          <p>Gecko descarrega i configura tots els serveis (pot trigar 5-10 minuts la primera vegada). Un cop acabat, el dashboard s'obre automàticament.</p>
+          <h4>Instal·lació i auto-configuració completa</h4>
+          <p>Gecko descarrega tots els serveis i els connecta automàticament entre ells — Prowlarr integrat amb Radarr, Sonarr i Lidarr; qBittorrent, Jellyseerr i Bazarr configurats. Pot trigar 5-10 minuts la primera vegada. <strong>L'únic que hauràs de fer manualment és afegir indexadors a Prowlarr.</strong></p>
         </div>
       </div>
+    </div>
+
+    <div class="callout callout-success">
+      <div class="callout-icon">✅</div>
+      <div><strong>Configuració zero manual:</strong> A diferència d'altres solucions, Gecko connecta tots els serveis automàticament. Un cop acabat l'assistent, l'únic pas manual que queda és afegir indexadors a Prowlarr. <a href="#prowlarr">Com fer-ho →</a></div>
     </div>
 
     <!-- ── DASHBOARD — MENÚ ───────────────────────────────────────────── -->
@@ -408,6 +413,15 @@
       </div>
     </div>
 
+      <div class="menu-item">
+        <div class="menu-icon">⬇️</div>
+        <div>
+          <div class="menu-label">Descàrregues</div>
+          <div class="menu-desc">Veu en temps real les descàrregues en curs de Radarr i Sonarr: progrés, mida i temps restant. Per cada ítem pots fer <strong>blocklist + nova cerca</strong> si la descàrrega no t'interessa.</div>
+        </div>
+      </div>
+    </div>
+
     <p style="margin-top:8px;"><strong>Idioma:</strong> A la part inferior de la barra lateral hi ha els botons <code>CA</code> / <code>ES</code> / <code>EN</code> per canviar l'idioma en qualsevol moment.</p>
 
     <!-- ── INICI ───────────────────────────────────────────────────────── -->
@@ -429,28 +443,72 @@
     <h2 id="vpn-page">🔒 Pàgina VPN</h2>
     <p>Des d'aquí pots gestionar la VPN en qualsevol moment, sense haver de reinstal·lar.</p>
 
-    <h3>Activar una VPN</h3>
-    <p>Necessites una compte de <a href="https://go.getproton.me/aff_c?offer_id=26&aff_id=7925" target="_blank">ProtonVPN</a> o <a href="https://mullvad.net" target="_blank">Mullvad</a> amb suport WireGuard. Passos:</p>
+    <h3>Quins proveïdors funcionen?</h3>
+    <p>
+      Gecko utilitza <strong>Gluetun</strong> com a contenidor VPN. <strong>No tots els proveïdors VPN funcionen</strong> amb aquesta configuració — cal que ofereixin WireGuard amb clau privada i adreça IP assignada. Els dos que funcionen de forma senzilla:
+    </p>
+    <ul>
+      <li><strong><a href="https://mullvad.net" target="_blank">Mullvad</a></strong> — el més senzill. Genera una clau directament al web sense descarregar fitxers. ~5€/mes sense subscripció.</li>
+      <li><strong><a href="https://go.getproton.me/aff_c?offer_id=26&aff_id=7925" target="_blank">ProtonVPN</a></strong> — genera un fitxer de configuració WireGuard del qual s'extreuen les dades. Té pla gratuït.</li>
+    </ul>
+
+    <div class="callout callout-warning">
+      <div class="callout-icon">⚠️</div>
+      <div><strong>NordVPN, Surfshark i similars no funcionen directament</strong> amb aquest mètode. Gluetun els suporta però requereix variables d'entorn específiques per a cada proveïdor, fora de l'abast de l'assistent.</div>
+    </div>
+
+    <h3>Mullvad — com obtenir les dades</h3>
     <div class="step-list">
       <div class="step-item">
         <div class="step-n">1</div>
         <div class="step-content">
-          <h4>Genera una clau WireGuard</h4>
-          <p>A ProtonVPN: <em>Compte → Descàrregues → WireGuard</em>. A Mullvad: <em>mullvad.net → Dispositius WireGuard → Genera clau</em>.</p>
+          <h4>Inicia sessió a my.mullvad.net</h4>
+          <p>Ves a <a href="https://my.mullvad.net" target="_blank">my.mullvad.net</a> i accedeix al teu compte.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-n">2</div>
         <div class="step-content">
-          <h4>Copia la clau privada i l'adreça IP</h4>
-          <p>El portal et donarà una <strong>clau privada</strong> (string llarg) i una <strong>adreça IP assignada</strong> (format <code>10.x.x.x/32</code>).</p>
+          <h4>WireGuard configuration → Add new device</h4>
+          <p>A la secció <strong>WireGuard configuration</strong>, escriu un nom (ex: <code>gecko</code>) i fes clic a <strong>Generate key</strong>.</p>
         </div>
       </div>
       <div class="step-item">
         <div class="step-n">3</div>
         <div class="step-content">
-          <h4>Enganxa-les a Gecko i prem Activar VPN</h4>
-          <p>Gecko actualitza el fitxer de configuració, canvia al compose file amb VPN i reinicia el stack. Triga uns 30 segons.</p>
+          <h4>Copia la clau privada i l'adreça</h4>
+          <p>Mullvad mostrarà la <strong>clau privada</strong> (string llarg) i l'<strong>adreça IP assignada</strong> (<code>10.68.x.x/32</code>). Copia ambdues a Gecko i prem <strong>Activar VPN</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>ProtonVPN — com obtenir les dades</h3>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-n">1</div>
+        <div class="step-content">
+          <h4>Ves a account.proton.me → VPN → Downloads</h4>
+          <p>Inicia sessió a <a href="https://account.proton.me" target="_blank">account.proton.me</a> i navega a <strong>VPN → Downloads → WireGuard configuration</strong>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-n">2</div>
+        <div class="step-content">
+          <h4>Genera i descarrega el fitxer .conf</h4>
+          <p>Tria un país/servidor i descarrega el fitxer de configuració <code>.conf</code>.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-n">3</div>
+        <div class="step-content">
+          <h4>Extreu PrivateKey i Address del fitxer</h4>
+          <p>Obre el <code>.conf</code> amb el Bloc de notes. A la secció <code>[Interface]</code> trobaràs les dues dades que necessites:</p>
+          <div class="ip-example" style="margin-top:10px;font-size:0.82rem;">
+            <span class="ip-comment">[Interface]</span><br/>
+            PrivateKey = <span class="ip-highlight">ABC123...xyz</span> <span class="ip-comment">← clau privada</span><br/>
+            Address = <span class="ip-highlight">10.2.x.x/32</span> <span class="ip-comment">← adreça IP assignada</span>
+          </div>
+          <p style="margin-top:8px;">Copia ambdós valors a Gecko i prem <strong>Activar VPN</strong>.</p>
         </div>
       </div>
     </div>
@@ -525,11 +583,50 @@
     </div>
 
     <!-- ── PROWLARR ────────────────────────────────────────────────────── -->
-    <h2 id="prowlarr">🔌 Configurar Prowlarr (pas obligatori)</h2>
+    <h2 id="prowlarr">🔌 Configurar Prowlarr — l'únic pas manual</h2>
     <p>
-      <strong>Sense indexadors configurats a Prowlarr, Radarr i Sonarr no trobaran contingut.</strong>
-      Prowlarr és el pont entre els cercadors de contingut i els gestors de descàrregues.
+      Un cop acabat l'assistent de Gecko, <strong>l'únic que has de fer manualment és afegir indexadors a Prowlarr.</strong>
+      Un indexador és un cercador de contingut (com Google però per a pel·lícules i sèries). Sense cap indexador, Radarr i Sonarr no trobaran res.
     </p>
+
+    <div class="callout callout-info">
+      <div class="callout-icon">ℹ️</div>
+      <div>
+        <strong>Prowlarr ja està connectat a Radarr, Sonarr i Lidarr.</strong> Gecko ho ha configurat automàticament. Quan afegeixes un indexador a Prowlarr, tots els serveis el veuran al moment — no cal fer res més.
+      </div>
+    </div>
+
+    <p>Per afegir indexadors a Prowlarr:</p>
+    <div class="step-list">
+      <div class="step-item">
+        <div class="step-n">1</div>
+        <div class="step-content">
+          <h4>Obre Prowlarr</h4>
+          <p>Ves a <code>localhost:9696</code> o fes clic al botó Prowlarr des del dashboard de Gecko.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-n">2</div>
+        <div class="step-content">
+          <h4>Indexers → Add Indexer</h4>
+          <p>Busca i afegeix els indexadors que vulguis. Prowlarr té centenars de font públiques i privades disponibles.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-n">✓</div>
+        <div class="step-content">
+          <h4>Ja estàs llest</h4>
+          <p>Els indexadors s'apliquen automàticament a Radarr, Sonarr i Lidarr. Ara pots demanar contingut des de Jellyseerr o afegir pel·lícules i sèries directament des de Radarr/Sonarr.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3>Com trobar bons indexadors</h3>
+    <ul>
+      <li>Busca <strong>"best public Prowlarr indexers [any actual]"</strong> a Google — hi ha llistes actualitzades regularment.</li>
+      <li>Pregunta a una IA (ChatGPT, Gemini…): <em>"Quins son els millors indexadors públics per Prowlarr per a pel·lícules i sèries en català/espanyol?"</em></li>
+      <li>Consulta la <a href="https://wiki.servarr.com/prowlarr/indexers" target="_blank">documentació oficial de Prowlarr</a> per veure el catàleg complet.</li>
+    </ul>
 
     <div class="callout callout-warning">
       <div class="callout-icon">⚠️</div>
@@ -537,14 +634,6 @@
         Gecko no inclou ni recomana cap indexador concret. L'usuari és l'únic responsable del contingut al qual accedeix i de complir la legislació vigent al seu país.
       </div>
     </div>
-
-    <p>Per afegir indexadors a Prowlarr:</p>
-    <ol>
-      <li>Obre Prowlarr (<code>localhost:9696</code> o la URL de la pàgina Xarxa).</li>
-      <li>Ves a <strong>Indexers → Add Indexer</strong>.</li>
-      <li>Cerca i configura els indexadors que vulguis.</li>
-      <li>Un cop afegits, Radarr i Sonarr els detectaran automàticament a través de Prowlarr.</li>
-    </ol>
 
     <!-- ── ACCÉS ───────────────────────────────────────────────────────── -->
     <h2 id="acces">📶 Accés local vs. accés extern</h2>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, Lock, ChevronUp, ChevronDown } from 'lucide-react';
+import { Sparkles, Lock, ChevronUp, ChevronDown, HelpCircle, Lightbulb, BookOpen, ExternalLink } from 'lucide-react';
 import type { Config } from '../App';
 import { useT } from '../LangContext';
 import ServiceIcon from '../components/ServiceIcon';
@@ -54,22 +54,57 @@ export default function StepDone({ config, next }: Props) {
         ))}
       </div>
 
-      {/* Indexer block */}
-      <div className="card w-full max-w-md p-4 text-left space-y-3">
-        <div className="flex items-center gap-2">
-          <ServiceIcon name="Prowlarr" size={20} />
-          <span className="font-semibold text-sm">{t.done_indexer_title}</span>
+      {/* Indexer block — primary CTA */}
+      <div className="card w-full max-w-md text-left" style={{ border: '1.5px solid var(--accent)', overflow: 'hidden' }}>
+        {/* Header */}
+        <div style={{ padding: '14px 16px 12px', background: 'rgba(var(--accent-rgb,13,148,136),0.05)', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <ServiceIcon name="Prowlarr" size={18} />
+            <span style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text)' }}>{t.done_indexer_title}</span>
+          </div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-2)', lineHeight: 1.55 }}>
+            {t.done_indexer_p1}<strong style={{ color: 'var(--text)' }}>{t.done_indexer_bold}</strong>{t.done_indexer_p2}
+          </p>
         </div>
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-2)' }}>
-          {t.done_indexer_p1}<strong>{t.done_indexer_bold}</strong>{t.done_indexer_p2}
-        </p>
-        <button
-          onClick={() => open('http://localhost:9696')}
-          className="btn-secondary w-full justify-center"
-        >
-          {t.done_indexer_btn}
-        </button>
-        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-3)' }}>{t.done_indexer_disclaimer}</p>
+
+        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* What is an indexer */}
+          <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <HelpCircle size={14} style={{ color: 'var(--accent)', flexShrink: 0, marginTop: 1 }} />
+            <div>
+              <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)', marginBottom: 2 }}>{t.done_indexer_what_title}</p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-2)', lineHeight: 1.55 }}>{t.done_indexer_what}</p>
+            </div>
+          </div>
+
+          {/* Main CTA */}
+          <button onClick={() => open('http://localhost:9696')} className="btn-primary w-full" style={{ justifyContent: 'center', minWidth: 'unset' }}>
+            <ExternalLink size={13} />{t.done_indexer_btn}
+          </button>
+
+          {/* Tips */}
+          <div style={{ background: 'rgba(0,0,0,0.03)', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+              <Lightbulb size={13} style={{ color: 'var(--accent)' }} />
+              <p style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text)' }}>{t.done_indexer_tips_title}</p>
+            </div>
+            {([t.done_indexer_tip_1, t.done_indexer_tip_2, t.done_indexer_tip_3] as string[]).map((tip, i) => (
+              <div key={i} style={{ display: 'flex', gap: 7, marginBottom: i < 2 ? 6 : 0, alignItems: 'flex-start' }}>
+                <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--accent)', flexShrink: 0, marginTop: 2 }}>{i + 1}.</span>
+                <p style={{ fontSize: '0.73rem', color: 'var(--text-2)', lineHeight: 1.5 }}>{tip}</p>
+              </div>
+            ))}
+            <button
+              onClick={() => open('https://wiki.servarr.com/prowlarr/indexers')}
+              className="btn-ghost"
+              style={{ marginTop: 8, padding: '4px 0', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 5, color: 'var(--accent)' }}
+            >
+              <BookOpen size={12} />{t.done_indexer_wiki_btn}
+            </button>
+          </div>
+
+          <p style={{ fontSize: '0.68rem', color: 'var(--text-3)', lineHeight: 1.5 }}>{t.done_indexer_disclaimer}</p>
+        </div>
       </div>
 
       {/* Add VPN section (shown if not enabled) */}

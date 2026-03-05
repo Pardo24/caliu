@@ -1,221 +1,181 @@
 import { useState } from 'react';
-import { CheckCircle2, ExternalLink, KeyRound } from 'lucide-react';
+import { CheckCircle2, ExternalLink, Lightbulb, BookOpen } from 'lucide-react';
 import { useT } from '../LangContext';
 import type { Lang } from '../i18n';
 import ServiceIcon, { type ServiceName } from '../components/ServiceIcon';
 
-const DONE_KEY = 'moss_guide_done';
+const DONE_KEY = 'gecko_guide_done';
 
 type Step = {
   id: string;
   serviceName: ServiceName;
   port: number;
+  required: boolean;
   title: Record<Lang, string>;
   intro: Record<Lang, string>;
-  items: Record<Lang, string[]>;
-  cred: Record<Lang, string>;
+  items: Record<Lang, { label?: string; detail?: string }[]>;
+  tips?: Record<Lang, string[]>;
+  wikiUrl?: string;
 };
 
 const STEPS: Step[] = [
   {
-    id: 'jellyfin',
-    serviceName: 'Jellyfin',
-    port: 8096,
-    title: { ca: 'Configurar Jellyfin', es: 'Configurar Jellyfin', en: 'Set up Jellyfin' },
-    intro: {
-      ca: 'El teu reproductor de cinema. Inicia sessió i afegeix les biblioteques de contingut.',
-      es: 'Tu reproductor de cine. Inicia sesión y añade las bibliotecas de contenido.',
-      en: 'Your cinema player. Sign in and add your media libraries.',
-    },
-    items: {
-      ca: [
-        "Obre Jellyfin i inicia sessió amb usuari admin i la teva contrasenya.",
-        "L'usuari i contrasenya s'han creat automàticament durant la instal·lació.",
-        'Dashboard → Libraries → Add Media Library',
-        'Afegeix: Pel·lícules → /data/movies  ·  Sèries → /data/series',
-      ],
-      es: [
-        'Abre Jellyfin e inicia sesión con usuario admin y tu contraseña.',
-        'El usuario y contraseña se crearon automáticamente durante la instalación.',
-        'Dashboard → Libraries → Add Media Library',
-        'Añade: Películas → /data/movies  ·  Series → /data/series',
-      ],
-      en: [
-        'Open Jellyfin and sign in with user admin and your password.',
-        'The user and password were auto-created during installation.',
-        'Dashboard → Libraries → Add Media Library',
-        'Add: Movies → /data/movies  ·  TV Shows → /data/series',
-      ],
-    },
-    cred: {
-      ca: 'admin  ·  [la teva contrasenya de Gecko]',
-      es: 'admin  ·  [tu contraseña de Gecko]',
-      en: 'admin  ·  [your Gecko password]',
-    },
-  },
-  {
     id: 'prowlarr',
     serviceName: 'Prowlarr',
     port: 9696,
-    title: { ca: 'Afegir indexadors a Prowlarr', es: 'Añadir indexadores a Prowlarr', en: 'Add indexers to Prowlarr' },
+    required: true,
+    title: {
+      ca: 'Afegir indexadors a Prowlarr',
+      es: 'Añadir indexadores a Prowlarr',
+      en: 'Add indexers to Prowlarr',
+    },
     intro: {
-      ca: 'Prowlarr és el cercador. Sense indexadors, Radarr i Sonarr no troben res.',
-      es: 'Prowlarr es el buscador. Sin indexadores, Radarr y Sonarr no encuentran nada.',
-      en: 'Prowlarr is the searcher. Without indexers, Radarr and Sonarr find nothing.',
+      ca: "L'únic pas manual. Gecko ha configurat totes les connexions — només cal dir-li on buscar contingut.",
+      es: 'El único paso manual. Gecko ha configurado todas las conexiones — solo hay que decirle dónde buscar contenido.',
+      en: 'The only manual step. Gecko has configured all connections — you just need to tell it where to find content.',
     },
     items: {
       ca: [
-        'Indexers → Add Indexer → tria els que vulguis del catàleg.',
-        'Sense contrasenya — accés directe.',
-        'Settings → General → API Key → Copia la clau.',
-        'Necessitaràs aquesta clau als passos Radarr i Sonarr.',
+        { label: 'Obre Prowlarr i ves a Indexers → Add Indexer.' },
+        { label: 'Cerca i afegeix els indexadors que vulguis del catàleg disponible.' },
+        { label: 'Prowlarr sincronitzarà automàticament els indexadors a Radarr, Sonarr i Lidarr.' },
       ],
       es: [
-        'Indexers → Add Indexer → elige los que quieras del catálogo.',
-        'Sin contraseña — acceso directo.',
-        'Settings → General → API Key → Copia la clave.',
-        'Necesitarás esta clave en los pasos Radarr y Sonarr.',
+        { label: 'Abre Prowlarr y ve a Indexers → Add Indexer.' },
+        { label: 'Busca y añade los indexadores que quieras del catálogo disponible.' },
+        { label: 'Prowlarr sincronizará automáticamente los indexadores a Radarr, Sonarr y Lidarr.' },
       ],
       en: [
-        'Indexers → Add Indexer → pick whichever you want from the catalogue.',
-        'No password — direct access.',
-        'Settings → General → API Key → Copy the key.',
-        "You'll need this key in the Radarr and Sonarr steps.",
+        { label: 'Open Prowlarr and go to Indexers → Add Indexer.' },
+        { label: 'Search and add whichever indexers you want from the catalogue.' },
+        { label: 'Prowlarr will automatically sync the indexers to Radarr, Sonarr and Lidarr.' },
       ],
     },
-    cred: {
-      ca: 'Sense contrasenya · Guarda la API Key per als passos següents',
-      es: 'Sin contraseña · Guarda la API Key para los siguientes pasos',
-      en: 'No password · Save the API Key for the next steps',
+    tips: {
+      ca: [
+        'Cerca "best public indexers Prowlarr 2024" a Google per trobar llistes actualitzades.',
+        'Pregunta a ChatGPT: "quins indexadors públics recomanes per a Prowlarr?"',
+        'Els indexadors públics no requereixen registre i cobreixen la majoria del contingut.',
+      ],
+      es: [
+        'Busca "best public indexers Prowlarr 2024" en Google para encontrar listas actualizadas.',
+        'Pregunta a ChatGPT: "¿qué indexadores públicos recomiendas para Prowlarr?"',
+        'Los indexadores públicos no requieren registro y cubren la mayoría del contenido.',
+      ],
+      en: [
+        'Search "best public indexers Prowlarr 2024" on Google for updated lists.',
+        'Ask ChatGPT: "which public indexers do you recommend for Prowlarr?"',
+        'Public indexers require no registration and cover most content.',
+      ],
+    },
+    wikiUrl: 'https://wiki.servarr.com/prowlarr/indexers',
+  },
+  {
+    id: 'jellyfin',
+    serviceName: 'Jellyfin',
+    port: 8096,
+    required: false,
+    title: {
+      ca: 'Afegir biblioteques a Jellyfin',
+      es: 'Añadir bibliotecas a Jellyfin',
+      en: 'Add libraries to Jellyfin',
+    },
+    intro: {
+      ca: "Perquè Jellyfin mostri el contingut organitzat cal afegir les biblioteques. L'usuari admin s'ha creat automàticament.",
+      es: 'Para que Jellyfin muestre el contenido organizado hay que añadir las bibliotecas. El usuario admin se ha creado automáticamente.',
+      en: 'To have Jellyfin display content in an organised way you need to add libraries. The admin user was created automatically.',
+    },
+    items: {
+      ca: [
+        { label: "Inicia sessió amb usuari admin i la teva contrasenya de Gecko." },
+        { label: 'Dashboard → Libraries → Add Media Library.' },
+        { label: "Afegeix Pel·lícules:", detail: 'Tipus: Movies  ·  Ruta: /media/movies' },
+        { label: 'Afegeix Sèries:', detail: 'Tipus: Shows  ·  Ruta: /media/series' },
+        { label: 'Afegeix Música (opcional):', detail: 'Tipus: Music  ·  Ruta: /media/music' },
+      ],
+      es: [
+        { label: 'Inicia sesión con usuario admin y tu contraseña de Gecko.' },
+        { label: 'Dashboard → Libraries → Add Media Library.' },
+        { label: 'Añade Películas:', detail: 'Tipo: Movies  ·  Ruta: /media/movies' },
+        { label: 'Añade Series:', detail: 'Tipo: Shows  ·  Ruta: /media/series' },
+        { label: 'Añade Música (opcional):', detail: 'Tipo: Music  ·  Ruta: /media/music' },
+      ],
+      en: [
+        { label: 'Sign in with user admin and your Gecko password.' },
+        { label: 'Dashboard → Libraries → Add Media Library.' },
+        { label: 'Add Movies:', detail: 'Type: Movies  ·  Path: /media/movies' },
+        { label: 'Add TV Shows:', detail: 'Type: Shows  ·  Path: /media/series' },
+        { label: 'Add Music (optional):', detail: 'Type: Music  ·  Path: /media/music' },
+      ],
     },
   },
   {
-    id: 'radarr',
-    serviceName: 'Radarr',
-    port: 7878,
-    title: { ca: 'Configurar Radarr (pel·lícules)', es: 'Configurar Radarr (películas)', en: 'Configure Radarr (movies)' },
+    id: 'bazarr',
+    serviceName: 'Bazarr',
+    port: 6767,
+    required: false,
+    title: {
+      ca: 'Configurar subtítols a Bazarr',
+      es: 'Configurar subtítulos en Bazarr',
+      en: 'Set up subtitles in Bazarr',
+    },
     intro: {
-      ca: 'Radarr gestiona les teves pel·lícules automàticament: busca, descarrega i organitza.',
-      es: 'Radarr gestiona tus películas automáticamente: busca, descarga y organiza.',
-      en: 'Radarr manages your movies automatically: searches, downloads and organises.',
+      ca: 'Bazarr descarrega subtítols automàticament. Ja està connectat a Radarr i Sonarr — només cal triar l\'idioma i el proveïdor.',
+      es: 'Bazarr descarga subtítulos automáticamente. Ya está conectado a Radarr y Sonarr — solo hay que elegir el idioma y el proveedor.',
+      en: 'Bazarr downloads subtitles automatically. It is already connected to Radarr and Sonarr — just pick your language and provider.',
     },
     items: {
       ca: [
-        'Settings → Download Clients → Add → qBittorrent',
-        'Host: localhost  ·  Port: 8090  ·  User: admin  ·  Pass: adminadmin',
-        'Settings → Indexers → Add → Prowlarr',
-        'URL: http://localhost:9696  ·  API Key: la del pas 2',
+        { label: 'Settings → Languages → afegeix els idiomes que vols (ex: Català, Castellà).' },
+        { label: 'Settings → Providers → Add Provider.' },
+        { detail: 'OpenSubtitles.com (compte gratuït) és el més recomanat.' },
+        { label: 'Bazarr buscarà subtítols automàticament quan arribi nou contingut.' },
       ],
       es: [
-        'Settings → Download Clients → Add → qBittorrent',
-        'Host: localhost  ·  Port: 8090  ·  User: admin  ·  Pass: adminadmin',
-        'Settings → Indexers → Add → Prowlarr',
-        'URL: http://localhost:9696  ·  API Key: la del paso 2',
+        { label: 'Settings → Languages → añade los idiomas que quieres (ej: Español, Catalán).' },
+        { label: 'Settings → Providers → Add Provider.' },
+        { detail: 'OpenSubtitles.com (cuenta gratuita) es el más recomendado.' },
+        { label: 'Bazarr buscará subtítulos automáticamente cuando llegue nuevo contenido.' },
       ],
       en: [
-        'Settings → Download Clients → Add → qBittorrent',
-        'Host: localhost  ·  Port: 8090  ·  User: admin  ·  Pass: adminadmin',
-        'Settings → Indexers → Add → Prowlarr',
-        'URL: http://localhost:9696  ·  API Key: from step 2',
+        { label: 'Settings → Languages → add the languages you want (e.g. English, Spanish).' },
+        { label: 'Settings → Providers → Add Provider.' },
+        { detail: 'OpenSubtitles.com (free account) is the most recommended.' },
+        { label: 'Bazarr will automatically fetch subtitles whenever new content arrives.' },
       ],
-    },
-    cred: {
-      ca: 'Radarr: sense contrasenya · qBittorrent: admin / adminadmin',
-      es: 'Radarr: sin contraseña · qBittorrent: admin / adminadmin',
-      en: 'Radarr: no password · qBittorrent: admin / adminadmin',
-    },
-  },
-  {
-    id: 'sonarr',
-    serviceName: 'Sonarr',
-    port: 8989,
-    title: { ca: 'Configurar Sonarr (sèries)', es: 'Configurar Sonarr (series)', en: 'Configure Sonarr (TV shows)' },
-    intro: {
-      ca: 'Sonarr fa el mateix que Radarr però per a sèries. Mateixa configuració.',
-      es: 'Sonarr hace lo mismo que Radarr pero para series. Misma configuración.',
-      en: 'Sonarr does the same as Radarr but for TV shows. Same configuration.',
-    },
-    items: {
-      ca: [
-        'Settings → Download Clients → Add → qBittorrent',
-        'Host: localhost  ·  Port: 8090  ·  User: admin  ·  Pass: adminadmin',
-        'Settings → Indexers → Add → Prowlarr',
-        'URL: http://localhost:9696  ·  API Key: la del pas 2',
-      ],
-      es: [
-        'Settings → Download Clients → Add → qBittorrent',
-        'Host: localhost  ·  Port: 8090  ·  User: admin  ·  Pass: adminadmin',
-        'Settings → Indexers → Add → Prowlarr',
-        'URL: http://localhost:9696  ·  API Key: la del paso 2',
-      ],
-      en: [
-        'Settings → Download Clients → Add → qBittorrent',
-        'Host: localhost  ·  Port: 8090  ·  User: admin  ·  Pass: adminadmin',
-        'Settings → Indexers → Add → Prowlarr',
-        'URL: http://localhost:9696  ·  API Key: from step 2',
-      ],
-    },
-    cred: {
-      ca: 'Sonarr: sense contrasenya · qBittorrent: admin / adminadmin',
-      es: 'Sonarr: sin contraseña · qBittorrent: admin / adminadmin',
-      en: 'Sonarr: no password · qBittorrent: admin / adminadmin',
-    },
-  },
-  {
-    id: 'jellyseerr',
-    serviceName: 'Jellyseerr',
-    port: 5055,
-    title: { ca: 'Connectar Jellyseerr', es: 'Conectar Jellyseerr', en: 'Connect Jellyseerr' },
-    intro: {
-      ca: 'Jellyseerr és la interfície per demanar contingut. El connectes a Jellyfin i queda tot lligat.',
-      es: 'Jellyseerr es la interfaz para pedir contenido. Lo conectas a Jellyfin y queda todo enlazado.',
-      en: 'Jellyseerr is the interface for requesting content. Connect it to Jellyfin and everything links up.',
-    },
-    items: {
-      ca: [
-        "Obre Jellyseerr i segueix l'assistent inicial.",
-        'Segueix les instruccions de la pantalla.',
-        'Quan et demani connectar Jellyfin, usa les credencials del pas 1.',
-        'admin  ·  [la teva contrasenya de Gecko]',
-      ],
-      es: [
-        'Abre Jellyseerr y sigue el asistente inicial.',
-        'Sigue las instrucciones en pantalla.',
-        'Cuando te pida conectar Jellyfin, usa las credenciales del paso 1.',
-        'admin  ·  [tu contraseña de Gecko]',
-      ],
-      en: [
-        'Open Jellyseerr and follow the initial setup wizard.',
-        'Follow the on-screen instructions.',
-        'When asked to connect Jellyfin, use the credentials from step 1.',
-        'admin  ·  [your Gecko password]',
-      ],
-    },
-    cred: {
-      ca: 'admin  ·  [la teva contrasenya de Gecko]  (les mateixes que Jellyfin)',
-      es: 'admin  ·  [tu contraseña de Gecko]  (las mismas que Jellyfin)',
-      en: 'admin  ·  [your Gecko password]  (same as Jellyfin)',
     },
   },
 ];
 
 const SUBTITLE: Record<Lang, string> = {
-  ca: 'Segueix aquests passos per posar-ho tot a punt.',
-  es: 'Sigue estos pasos para configurar todo.',
-  en: 'Follow these steps to get everything set up.',
+  ca: 'Gecko ha configurat automàticament totes les connexions. Completa els passos que queden:',
+  es: 'Gecko ha configurado automáticamente todas las conexiones. Completa los pasos que quedan:',
+  en: 'Gecko has automatically configured all service connections. Complete the remaining steps:',
+};
+
+const REQUIRED_BADGE: Record<Lang, string> = {
+  ca: 'Necessari',
+  es: 'Necesario',
+  en: 'Required',
+};
+
+const OPTIONAL_BADGE: Record<Lang, string> = {
+  ca: 'Opcional',
+  es: 'Opcional',
+  en: 'Optional',
 };
 
 const OPEN_LABEL: Record<Lang, string> = { ca: 'Obrir', es: 'Abrir', en: 'Open' };
 const MARK_DONE:  Record<Lang, string> = { ca: 'Marcar fet', es: 'Marcar hecho', en: 'Mark done' };
 const MARK_UNDO:  Record<Lang, string> = { ca: 'Desmarcar', es: 'Desmarcar', en: 'Undo' };
+const TIPS_LABEL: Record<Lang, string> = { ca: 'Consells', es: 'Consejos', en: 'Tips' };
+const WIKI_LABEL: Record<Lang, string> = { ca: 'Wiki oficial', es: 'Wiki oficial', en: 'Official wiki' };
 
 const DISCLAIMER: Record<Lang, string> = {
   ca: "⚠️ Gecko és una eina de gestió de serveis multimèdia. L'usuari és l'únic responsable del contingut que descarrega i de complir la legislació vigent al seu país.",
   es: '⚠️ Gecko es una herramienta de gestión de servicios multimedia. El usuario es el único responsable del contenido que descarga y de cumplir la legislación vigente en su país.',
   en: '⚠️ Gecko is a media service management tool. The user is solely responsible for the content they download and for complying with applicable law in their country.',
 };
-
-function isDetail(i: number) { return i % 2 === 1; }
 
 export default function PageGuia() {
   const { lang } = useT();
@@ -242,8 +202,8 @@ export default function PageGuia() {
       {/* Progress header */}
       <div className="card-sm" style={{ padding: '12px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-2)' }}>{SUBTITLE[lang]}</p>
-          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent)', fontFamily: 'monospace' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--text-2)', lineHeight: 1.5 }}>{SUBTITLE[lang]}</p>
+          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--accent)', fontFamily: 'monospace', flexShrink: 0, marginLeft: 8 }}>
             {completedCount}/{total}
           </span>
         </div>
@@ -263,7 +223,11 @@ export default function PageGuia() {
               overflow: 'hidden',
               opacity: isDone ? 0.6 : 1,
               transition: 'opacity 0.2s',
-              border: isDone ? '1px solid rgba(34,197,94,0.25)' : '1px solid var(--border)',
+              border: isDone
+                ? '1px solid rgba(34,197,94,0.25)'
+                : step.required
+                  ? '1.5px solid var(--accent)'
+                  : '1px solid var(--border)',
             }}
           >
             {/* Header */}
@@ -285,7 +249,7 @@ export default function PageGuia() {
 
               {/* Content */}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 3, flexWrap: 'wrap' }}>
                   <ServiceIcon name={step.serviceName} size={17} />
                   <p style={{
                     fontWeight: 700, fontSize: '0.95rem', flex: 1,
@@ -294,6 +258,13 @@ export default function PageGuia() {
                   }}>
                     {step.title[lang]}
                   </p>
+                  <span style={{
+                    fontSize: '0.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+                    background: step.required ? 'rgba(var(--accent-rgb,13,148,136),0.12)' : 'rgba(0,0,0,0.06)',
+                    color: step.required ? 'var(--accent)' : 'var(--text-3)',
+                  }}>
+                    {step.required ? REQUIRED_BADGE[lang] : OPTIONAL_BADGE[lang]}
+                  </span>
                 </div>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-3)', lineHeight: 1.45, marginBottom: 10 }}>
                   {step.intro[lang]}
@@ -317,44 +288,68 @@ export default function PageGuia() {
               </div>
             </div>
 
-            {/* Expanded content */}
+            {/* Expanded steps + tips */}
             {!isDone && (
               <>
                 <div style={{ height: 1, background: 'var(--border)' }} />
                 <div style={{ padding: '14px 18px 16px 78px' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-                    {step.items[lang].map((item, j) => (
-                      isDetail(j) ? (
+                    {step.items[lang].map((item, j) =>
+                      !item.label ? (
                         <div key={j} style={{
                           background: 'rgba(0,0,0,0.04)', borderRadius: 7,
                           padding: '5px 11px', borderLeft: '2px solid rgba(13,148,136,0.25)',
                         }}>
-                          <p style={{ fontFamily: 'monospace', fontSize: '0.69rem', color: 'var(--text-2)', lineHeight: 1.5 }}>{item}</p>
+                          <p style={{ fontFamily: 'monospace', fontSize: '0.69rem', color: 'var(--text-2)', lineHeight: 1.5 }}>{item.detail}</p>
                         </div>
                       ) : (
-                        <div key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                          <div style={{
-                            width: 20, height: 20, borderRadius: 6,
-                            background: 'rgba(13,148,136,0.1)', color: 'var(--accent)',
-                            fontSize: '0.62rem', fontWeight: 800,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            flexShrink: 0, marginTop: 1,
-                          }}>
-                            {Math.floor(j / 2) + 1}
+                        <div key={j}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                            <div style={{
+                              width: 20, height: 20, borderRadius: 6,
+                              background: 'rgba(13,148,136,0.1)', color: 'var(--accent)',
+                              fontSize: '0.62rem', fontWeight: 800,
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              flexShrink: 0, marginTop: 1,
+                            }}>
+                              {j + 1}
+                            </div>
+                            <p style={{ fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55 }}>{item.label}</p>
                           </div>
-                          <p style={{ fontSize: '0.82rem', color: 'var(--text-2)', lineHeight: 1.55 }}>{item}</p>
+                          {item.detail && (
+                            <div style={{ marginLeft: 28, marginTop: 4, background: 'rgba(0,0,0,0.04)', borderRadius: 7, padding: '5px 11px', borderLeft: '2px solid rgba(13,148,136,0.25)' }}>
+                              <p style={{ fontFamily: 'monospace', fontSize: '0.69rem', color: 'var(--text-2)', lineHeight: 1.5 }}>{item.detail}</p>
+                            </div>
+                          )}
                         </div>
                       )
-                    ))}
+                    )}
                   </div>
 
-                  {/* Credentials */}
-                  <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(13,148,136,0.06)', borderRadius: 8, padding: '8px 12px' }}>
-                    <KeyRound size={12} style={{ color: 'var(--accent)', flexShrink: 0 }} />
-                    <p style={{ fontSize: '0.72rem', color: 'var(--text-2)', fontFamily: 'monospace', lineHeight: 1.4 }}>
-                      {step.cred[lang]}
-                    </p>
-                  </div>
+                  {/* Tips */}
+                  {step.tips && (
+                    <div style={{ marginTop: 12, background: 'rgba(0,0,0,0.03)', borderRadius: 10, padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                        <Lightbulb size={13} style={{ color: 'var(--accent)' }} />
+                        <p style={{ fontSize: '0.73rem', fontWeight: 700, color: 'var(--text)' }}>{TIPS_LABEL[lang]}</p>
+                      </div>
+                      {step.tips[lang].map((tip, j) => (
+                        <div key={j} style={{ display: 'flex', gap: 7, marginBottom: j < step.tips![lang].length - 1 ? 5 : 0, alignItems: 'flex-start' }}>
+                          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--accent)', flexShrink: 0, marginTop: 2 }}>{j + 1}.</span>
+                          <p style={{ fontSize: '0.73rem', color: 'var(--text-2)', lineHeight: 1.5 }}>{tip}</p>
+                        </div>
+                      ))}
+                      {step.wikiUrl && (
+                        <button
+                          onClick={() => window.electron.openExternal(step.wikiUrl!)}
+                          className="btn-ghost"
+                          style={{ marginTop: 8, padding: '4px 0', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: 5, color: 'var(--accent)' }}
+                        >
+                          <BookOpen size={12} />{WIKI_LABEL[lang]}
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </>
             )}

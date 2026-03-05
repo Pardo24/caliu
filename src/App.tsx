@@ -14,6 +14,7 @@ import Dashboard from './Dashboard';
 export type Config = {
   dataPath: string;
   adminPassword: string;
+  subtitleLangs: string[];
   vpnEnabled: boolean;
   mullvadKey: string;
   mullvadAddress: string;
@@ -48,7 +49,7 @@ function Wizard({ onInstalled }: { onInstalled: () => void }) {
   const { t } = useT();
   const [step, setStep] = useState<Step>('welcome');
   const [config, setConfig] = useState<Config>({
-    dataPath: '', adminPassword: '', vpnEnabled: false, mullvadKey: '', mullvadAddress: '',
+    dataPath: '', adminPassword: '', subtitleLangs: [], vpnEnabled: false, mullvadKey: '', mullvadAddress: '',
   });
 
   const next = () => {
