@@ -83,10 +83,6 @@ npm run make
 
 ---
 
-## Support
-
-If you find Gecko useful, consider buying me a coffee ☕
-
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-danipardo24-teal?logo=buy-me-a-coffee)](https://buymeacoffee.com/danipardo24)
 
 ---
