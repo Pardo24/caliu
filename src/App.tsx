@@ -103,7 +103,7 @@ function Wizard({ onInstalled }: { onInstalled: () => void }) {
             <div className="progress-fill" style={{ width: `${(STEPS.indexOf(step) / (STEPS.length - 2)) * 100}%` }} />
           </div>
         )}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
           {step === 'welcome'    && <StepWelcome    {...stepProps} />}
           {step === 'docker'     && <StepDocker     {...stepProps} />}
           {step === 'storage'    && <StepStorage    {...stepProps} />}

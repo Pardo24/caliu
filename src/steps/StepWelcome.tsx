@@ -8,12 +8,12 @@ export default function StepWelcome({ next }: Props) {
   const { t } = useT();
 
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-8 px-8 text-center relative overflow-hidden">
+    <div className="min-h-full flex flex-col items-center justify-center gap-8 px-8 text-center relative overflow-hidden py-6">
       <div className="hero-glow" />
 
       <div className="flex flex-col items-center gap-4 relative z-10">
         <div className="logo-circle" style={{ padding: 6 }}>
-          <img src={appIcon} alt="Gecko" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 10 }} />
+          <img src={appIcon} alt="Gecko" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 10, mixBlendMode: 'screen' }} />
         </div>
         <div>
           <h1 className="text-5xl font-bold tracking-tight gradient-title">Gecko</h1>

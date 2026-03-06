@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('electron', {
   checkDocker:       ()                  => ipcRenderer.invoke('check-docker'),
+  startDocker:       ()                  => ipcRenderer.invoke('start-docker'),
   pickFolder:        ()                  => ipcRenderer.invoke('pick-folder'),
   install:           (config: unknown)   => ipcRenderer.invoke('install', config),
   addVpn:            (creds: unknown)    => ipcRenderer.invoke('add-vpn', creds),

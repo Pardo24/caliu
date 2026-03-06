@@ -3,9 +3,10 @@ export {};
 declare global {
   interface Window {
     electron: {
-      checkDocker:    () => Promise<boolean>;
+      checkDocker:    () => Promise<'running' | 'installed' | 'missing'>;
+      startDocker:    () => Promise<void>;
       pickFolder:     () => Promise<string | null>;
-      install:        (config: unknown) => Promise<void>;
+      install:        (config: unknown) => Promise<{ failedSteps: number[] }>;
       openExternal:   (url: string) => void;
       getConfig:      () => Promise<Record<string, string> & { vpnEnabled: boolean } | null>;
       getStatus:      () => Promise<'running' | 'stopped'>;

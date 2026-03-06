@@ -300,7 +300,7 @@
       <a href="#vpn">VPN</a>
       <a href="#faq">FAQ</a>
       <a href="guia.html" data-i18n="nav_guide">Guia</a>
-      <a href="https://github.com/Pardo24/Moss" target="_blank">GitHub</a>
+      <a href="https://github.com/Pardo24/Gecko" target="_blank">GitHub</a>
       <div class="nav-sep"></div>
       <div class="lang-dropdown" id="langDropdown">
         <button class="lang-trigger" onclick="toggleLangDropdown()" id="langTrigger">
@@ -347,7 +347,7 @@
       <a href="#download" class="btn btn-primary" style="font-size:1rem;padding:15px 36px;" data-i18n="hero_btn_dl">
         Descarregar Gecko
       </a>
-      <a href="https://github.com/Pardo24/Moss" target="_blank" class="btn btn-outline" data-i18n="hero_btn_gh">
+      <a href="https://github.com/Pardo24/Gecko" target="_blank" class="btn btn-outline" data-i18n="hero_btn_gh">
         Veure a GitHub
       </a>
     </div>
@@ -723,10 +723,10 @@
     <h2 data-i18n="cta_title">Comença avui. És gratis.</h2>
     <p data-i18n="cta_sub">Descarrega Gecko i tingues el teu Netflix casolà en 5 minuts.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-      <a href="https://github.com/Pardo24/Moss/releases/latest" class="btn btn-primary">
+      <a id="dl-win" href="https://github.com/Pardo24/Gecko/releases/latest" class="btn btn-primary">
         <i class="fa-brands fa-windows" style="margin-right:7px;"></i><span data-i18n="cta_btn_win">Descarregar per Windows</span>
       </a>
-      <a href="https://github.com/Pardo24/Moss/releases/latest" class="btn" style="background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.2);color:#fff;">
+      <a id="dl-mac" href="https://github.com/Pardo24/Gecko/releases/latest" class="btn" style="background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.2);color:#fff;">
         <i class="fa-brands fa-apple" style="margin-right:7px;"></i><span data-i18n="cta_btn_mac">Descarregar per Mac</span>
       </a>
     </div>
@@ -753,10 +753,10 @@
       </div>
       <div class="footer-links">
         <h4 data-i18n="footer_col1">Projecte</h4>
-        <a href="https://github.com/Pardo24/Moss" target="_blank">GitHub</a>
-        <a href="https://github.com/Pardo24/Moss/releases" target="_blank" data-i18n="footer_releases">Versions</a>
+        <a href="https://github.com/Pardo24/Gecko" target="_blank">GitHub</a>
+        <a href="https://github.com/Pardo24/Gecko/releases" target="_blank" data-i18n="footer_releases">Versions</a>
         <a href="guia.html" data-i18n="footer_guide_link">Guia d'usuari</a>
-        <a href="https://github.com/Pardo24/Moss/issues" target="_blank" data-i18n="footer_issues">Reportar error</a>
+        <a href="https://github.com/Pardo24/Gecko/issues" target="_blank" data-i18n="footer_issues">Reportar error</a>
         <a href="https://buymeacoffee.com/danipardo24" target="_blank" rel="noopener" data-i18n="footer_bmc">☕ Suport al projecte</a>
       </div>
       <div class="footer-links">
@@ -775,7 +775,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2025 Gecko · <a href="https://github.com/Pardo24/Moss/blob/main/LICENSE">MIT License</a></p>
+      <p>© 2025 Gecko · <a href="https://github.com/Pardo24/Gecko/blob/main/LICENSE">MIT License</a></p>
       <p style="font-size:0.75rem;" data-i18n="footer_disclaimer">Alguns enllaços poden ser de referit. Gecko no s'associa amb cap dels serveis que menciona.</p>
     </div>
   </div>
@@ -1028,6 +1028,27 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 if (window.lucide && window.lucide.createIcons) {
   window.lucide.createIcons();
 }
+
+/* ── Direct download links from latest GitHub release ────────────────── */
+(async () => {
+  try {
+    const r = await fetch('https://api.github.com/repos/Pardo24/Gecko/releases/latest', { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) return;
+    const data = await r.json();
+    const assets = data.assets || [];
+    const winAsset = assets.find(a => a.name.endsWith('.exe') && !a.name.endsWith('.nupkg'));
+    const macAsset = assets.find(a => a.name.endsWith('.dmg'));
+    const winBtn = document.getElementById('dl-win');
+    const macBtn = document.getElementById('dl-mac');
+    if (winAsset && winBtn) { winBtn.href = winAsset.browser_download_url; winBtn.setAttribute('download', winAsset.name); }
+    if (macAsset && macBtn) { macBtn.href = macAsset.browser_download_url; macBtn.setAttribute('download', macAsset.name); }
+    if (data.tag_name) {
+      document.querySelectorAll('[data-i18n="cta_note"]').forEach(el => {
+        el.innerHTML = el.innerHTML.replace(/v[\d.]+/, data.tag_name);
+      });
+    }
+  } catch (_) { /* falls back to releases page link */ }
+})();
 </script>
 
 </body>

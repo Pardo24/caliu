@@ -27,7 +27,7 @@ export default function StepDone({ config, next }: Props) {
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-5 px-8 text-center overflow-y-auto py-6">
+    <div className="min-h-full flex flex-col items-center justify-center gap-5 px-8 text-center py-6">
       <div className="flex flex-col items-center gap-3">
         <Sparkles size={48} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
         <h2 className="text-3xl font-bold gradient-title">{t.done_title}</h2>

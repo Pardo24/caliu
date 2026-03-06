@@ -4,21 +4,35 @@ import type { Config } from '../App';
 import { useT } from '../LangContext';
 
 type Props = { config: Config; updateConfig: (p: Partial<Config>) => void; next: () => void };
-type Status = 'checking' | 'ok' | 'missing';
+type Status = 'checking' | 'running' | 'installed' | 'missing';
 
 export default function StepDocker({ next }: Props) {
   const { t } = useT();
   const [status, setStatus] = useState<Status>('checking');
+  const [starting, setStarting] = useState(false);
 
   const check = () => {
     setStatus('checking');
-    window.electron.checkDocker().then((ok: boolean) => setStatus(ok ? 'ok' : 'missing'));
+    window.electron.checkDocker().then(s => setStatus(s));
+  };
+
+  const handleStart = async () => {
+    setStarting(true);
+    await window.electron.startDocker();
+    // Poll every 5s for up to 60s
+    for (let i = 0; i < 12; i++) {
+      await new Promise(r => setTimeout(r, 5000));
+      const s = await window.electron.checkDocker();
+      if (s === 'running') { setStatus('running'); setStarting(false); return; }
+    }
+    setStarting(false);
+    check();
   };
 
   useEffect(() => { check(); }, []);
 
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-7 px-8 text-center">
+    <div className="min-h-full flex flex-col items-center justify-center gap-7 px-8 text-center py-6">
       <div className="flex flex-col items-center gap-4">
         <div className="step-icon blue"><Server size={38} strokeWidth={1.5} /></div>
         <div>
@@ -30,16 +44,33 @@ export default function StepDocker({ next }: Props) {
 
       {status === 'checking' && (
         <div className="flex flex-col items-center gap-4">
-          <div className="w-11 h-11 rounded-full border-3 spin" style={{ border: '3px solid var(--accent)', borderTopColor: 'transparent' }} />
+          <div className="w-11 h-11 rounded-full spin" style={{ border: '3px solid var(--accent)', borderTopColor: 'transparent' }} />
           <p style={{ color: 'var(--text-2)' }}>{t.docker_checking}</p>
         </div>
       )}
 
-      {status === 'ok' && (
+      {status === 'running' && (
         <div className="card px-8 py-6 flex flex-col items-center gap-5">
           <div className="text-5xl">✅</div>
           <p className="font-semibold text-green-600">{t.docker_ok}</p>
           <button onClick={next} className="btn-primary">{t.continue}</button>
+        </div>
+      )}
+
+      {status === 'installed' && (
+        <div className="card px-8 py-6 flex flex-col items-center gap-5 max-w-sm w-full">
+          <div className="text-5xl">🐳</div>
+          <p className="font-semibold text-amber-600">{t.docker_not_running}</p>
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>{t.docker_not_running_desc}</p>
+          {starting ? (
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-9 h-9 rounded-full spin" style={{ border: '3px solid var(--accent)', borderTopColor: 'transparent' }} />
+              <p className="text-sm" style={{ color: 'var(--text-2)' }}>{t.docker_starting}</p>
+            </div>
+          ) : (
+            <button onClick={handleStart} className="btn-primary">{t.docker_start_btn}</button>
+          )}
+          <button onClick={check} className="btn-ghost text-sm underline">{t.docker_retry}</button>
         </div>
       )}
 
@@ -55,9 +86,7 @@ export default function StepDocker({ next }: Props) {
           >
             {t.docker_download}
           </button>
-          <button onClick={check} className="btn-ghost text-sm underline">
-            {t.docker_retry}
-          </button>
+          <button onClick={check} className="btn-ghost text-sm underline">{t.docker_retry}</button>
         </div>
       )}
     </div>

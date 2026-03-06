@@ -38,7 +38,14 @@ const createWindow = () => {
   }
 };
 
-app.on('ready', createWindow);
+app.on('ready', async () => {
+  createWindow();
+  // If the stack was already running when Gecko opens, start the monitor
+  try {
+    const { stdout } = await execAsync('docker compose ps -q', { cwd: composeDir(), env: dockerEnv() });
+    if (stdout.trim().split('\n').filter(Boolean).length > 0) startStallMonitor();
+  } catch { /* stack not yet installed */ }
+});
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 
@@ -79,6 +86,9 @@ async function configureJellyfin(port: number, adminPassword: string): Promise<v
   const check = await jellyfinGet('/Startup/Configuration', port);
   if (check !== 200) return;
 
+  // Complete all wizard steps in order (Jellyfin requires each step before the next)
+  await jellyfinPost('/Startup/Configuration', port, { UICulture: 'en-US', MetadataCountryCode: 'US', PreferredMetadataLanguage: 'en' });
+  await jellyfinPost('/Startup/RemoteAccess', port, { EnableRemoteAccess: true, EnableAutomaticPortMapping: false });
   await jellyfinPost('/Startup/User', port, { Name: 'admin', Password: adminPassword, PasswordConf: adminPassword });
   await jellyfinPost('/Startup/Complete', port, {});
 }
@@ -113,13 +123,111 @@ function parseEnv(content: string): Record<string, string> {
   );
 }
 
+// ── Stall monitor ─────────────────────────────────────────────
+// Periodically checks Radarr and Sonarr queues.
+// Any item with trackedDownloadStatus 'warning' or 'error' that has been
+// in the queue for more than STALL_THRESHOLD_MS is auto-blocklisted so
+// the *arr service immediately searches for an alternative release.
+
+const STALL_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
+const STALL_CHECK_INTERVAL_MS = 30 * 60 * 1000; // check every 30 minutes
+let stallMonitorTimer: ReturnType<typeof setInterval> | null = null;
+
+function arrHttpGet(port: number, urlPath: string, apiKey: string): Promise<{ status: number; body: string }> {
+  return new Promise(resolve => {
+    const req = http.request(
+      { hostname: 'localhost', port, path: urlPath, headers: { 'X-Api-Key': apiKey } },
+      res => {
+        let data = '';
+        res.on('data', (d: Buffer) => data += d);
+        res.on('end', () => resolve({ status: res.statusCode ?? 0, body: data }));
+      },
+    );
+    req.on('error', () => resolve({ status: 0, body: '' }));
+    req.setTimeout(8000, () => { req.destroy(); resolve({ status: 0, body: '' }); });
+    req.end();
+  });
+}
+
+function arrHttpDelete(port: number, urlPath: string, apiKey: string): Promise<void> {
+  return new Promise(resolve => {
+    const req = http.request(
+      { hostname: 'localhost', port, path: urlPath, method: 'DELETE', headers: { 'X-Api-Key': apiKey } },
+      res => { res.resume(); res.on('end', resolve); },
+    );
+    req.on('error', () => resolve());
+    req.setTimeout(8000, () => { req.destroy(); resolve(); });
+    req.end();
+  });
+}
+
+async function blocklistStalledInService(
+  port: number, apiKey: string, apiVersion: string,
+): Promise<void> {
+  const resp = await arrHttpGet(port, `${apiVersion}/queue?pageSize=200&includeUnknownMovieItems=true`, apiKey);
+  if (resp.status !== 200) return;
+  const queue = JSON.parse(resp.body) as {
+    records: Array<{ id: number; added: string; trackedDownloadStatus: string }>;
+  };
+  const now = Date.now();
+  for (const item of queue.records ?? []) {
+    if (item.trackedDownloadStatus !== 'warning' && item.trackedDownloadStatus !== 'error') continue;
+    const age = now - new Date(item.added).getTime();
+    if (age < STALL_THRESHOLD_MS) continue;
+    // blocklist=true + skipRequeue=false → removes, blocklists, and triggers a new search
+    await arrHttpDelete(
+      port,
+      `${apiVersion}/queue/${item.id}?removeFromClient=true&blocklist=true&skipRequeue=false`,
+      apiKey,
+    );
+  }
+}
+
+async function runStallCheck(): Promise<void> {
+  try {
+    const envContent = await fs.readFile(path.join(composeDir(), '.env'), 'utf8');
+    const env = parseEnv(envContent);
+    const radarrPort = parseInt(env.RADARR_PORT ?? '7878');
+    const sonarrPort = parseInt(env.SONARR_PORT ?? '8989');
+    if (env.RADARR_API_KEY) await blocklistStalledInService(radarrPort, env.RADARR_API_KEY, '/api/v3');
+    if (env.SONARR_API_KEY) await blocklistStalledInService(sonarrPort, env.SONARR_API_KEY, '/api/v3');
+  } catch { /* stack not running or no config */ }
+}
+
+function startStallMonitor(): void {
+  if (stallMonitorTimer) return;
+  stallMonitorTimer = setInterval(() => { runStallCheck(); }, STALL_CHECK_INTERVAL_MS);
+}
+
+function stopStallMonitor(): void {
+  if (stallMonitorTimer) { clearInterval(stallMonitorTimer); stallMonitorTimer = null; }
+}
+
 // ── IPC Handlers ─────────────────────────────────────────────
 
 ipcMain.handle('get-version', () => app.getVersion());
 
 ipcMain.handle('check-docker', async () => {
-  try { await execAsync('docker info', { env: dockerEnv() }); return true; }
-  catch { return false; }
+  try { await execAsync('docker info', { env: dockerEnv() }); return 'running'; }
+  catch {
+    try { await execAsync('docker --version', { env: dockerEnv() }); return 'installed'; }
+    catch { return 'missing'; }
+  }
+});
+
+ipcMain.handle('start-docker', async () => {
+  if (process.platform === 'darwin') {
+    await execAsync('open -a Docker');
+  } else {
+    // Windows: try to launch Docker Desktop
+    const paths = [
+      'C:\\Program Files\\Docker\\Docker\\Docker Desktop.exe',
+      'C:\\Program Files (x86)\\Docker\\Docker\\Docker Desktop.exe',
+    ];
+    for (const p of paths) {
+      try { await execAsync(`start "" "${p}"`); return; } catch { /* try next */ }
+    }
+  }
 });
 
 ipcMain.handle('pick-folder', async () => {
@@ -154,10 +262,12 @@ ipcMain.handle('get-status', async () => {
 
 ipcMain.handle('start-stack', async () => {
   await execAsync('docker compose up -d', { cwd: composeDir(), env: dockerEnv() });
+  startStallMonitor();
 });
 
 ipcMain.handle('stop-stack', async () => {
   await execAsync('docker compose down', { cwd: composeDir(), env: dockerEnv() });
+  stopStallMonitor();
 });
 
 ipcMain.handle('get-disk-stats', async (_e, folderPath: string) => {
@@ -247,8 +357,12 @@ ipcMain.handle('install', async (event, config: {
   progress(3);
   try { await configureJellyfin(8096, adminPassword); } catch { /* best-effort */ }
 
-  // Steps 4–10: Auto-configure remaining services
-  await runAutoSetup({
+  // Steps 4–10: Auto-configure remaining services (with retry + failure tracking)
+  const stepFailed = (step: number) => {
+    try { event.sender.send('install-step-failed', step); } catch { /* window may be closing */ }
+  };
+
+  const { failedSteps } = await runAutoSetup({
     adminPassword,
     subtitleLangs: subtitleLangs ?? [],
     apiKeys,
@@ -259,7 +373,10 @@ ipcMain.handle('install', async (event, config: {
     vpnEnabled,
     dockerEnvObj: dockerEnv(),
     onProgress: progress,
+    onStepFailed: stepFailed,
   });
+
+  return { failedSteps };
 });
 
 ipcMain.handle('add-vpn', async (_e, { mullvadKey, mullvadAddress }: { mullvadKey: string; mullvadAddress: string }) => {

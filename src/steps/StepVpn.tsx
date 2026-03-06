@@ -8,7 +8,7 @@ export default function StepVpn({ config, updateConfig, next }: Props) {
   const { t } = useT();
 
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-7 px-8 py-8 text-center overflow-y-auto">
+    <div className="min-h-full flex flex-col items-center justify-center gap-7 px-8 py-8 text-center">
       <div className="flex flex-col items-center gap-4">
         <div className="step-icon green"><Shield size={38} strokeWidth={1.5} /></div>
         <div>

@@ -41,7 +41,7 @@ export default function StepAdmin({ config, updateConfig, next }: Props) {
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center gap-6 px-8 text-center overflow-y-auto py-6">
+    <div className="min-h-full flex flex-col items-center justify-center gap-6 px-8 text-center py-6">
       <div className="flex flex-col items-center gap-4">
         <div className="step-icon teal"><Lock size={38} strokeWidth={1.5} /></div>
         <div>
