@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Server, CheckCircle2, Box, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, AlertTriangle } from 'lucide-react';
+import { siDocker } from 'simple-icons';
 import type { Config } from '../App';
 import { useT } from '../LangContext';
+
+function DockerLogo({ size = 38, color = '#2496ED' }: { size?: number; color?: string }) {
+  return (
+    <svg role="img" viewBox="0 0 24 24" width={size} height={size} fill={color}>
+      <path d={siDocker.path} />
+    </svg>
+  );
+}
 
 type Props = { config: Config; updateConfig: (p: Partial<Config>) => void; next: () => void };
 type Status = 'checking' | 'running' | 'installed' | 'missing';
@@ -34,7 +43,7 @@ export default function StepDocker({ next }: Props) {
   return (
     <div className="min-h-full flex flex-col items-center justify-center gap-7 px-8 text-center py-6">
       <div className="flex flex-col items-center gap-4">
-        <div className="step-icon blue"><Server size={38} strokeWidth={1.5} /></div>
+        <div className="step-icon blue"><DockerLogo size={38} /></div>
         <div>
           <h2 className="text-3xl font-bold mb-1">{t.docker_title}</h2>
           <p className="text-sm" style={{ color: 'var(--text-3)' }}>{t.docker_sub}</p>
@@ -59,7 +68,7 @@ export default function StepDocker({ next }: Props) {
 
       {status === 'installed' && (
         <div className="card px-8 py-6 flex flex-col items-center gap-5 max-w-sm w-full">
-          <Box size={52} style={{ color: '#2563eb' }} strokeWidth={1.5} />
+          <DockerLogo size={52} />
           <p className="font-semibold text-amber-600">{t.docker_not_running}</p>
           <p className="text-sm leading-relaxed" style={{ color: 'var(--text-2)' }}>{t.docker_not_running_desc}</p>
           {starting ? (
