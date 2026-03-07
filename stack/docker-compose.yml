@@ -256,20 +256,6 @@ services:
           cpus: "0.5"
           memory: 256M
 
-  # restart-qbittorrent — Reinicia qBit automáticamente tras reconexión de Gluetun
-  restart-qbittorrent:
-    image: ghcr.io/jakubkopys/restart-qbittorrent:latest
-    container_name: media_restart_qbit
-    restart: unless-stopped
-    networks:
-      - media_net
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    environment:
-      GLUETUN_CONTAINER: media_gluetun
-      QBITTORRENT_CONTAINER: media_qbittorrent
-      CHECK_INTERVAL: 30
-
 # ============================================================
 # Volúmenes Docker internos — protegen las DBs SQLite de la
 # corrupción causada por NTFS + WSL2 + Docker Desktop en Windows
