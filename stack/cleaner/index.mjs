@@ -67,28 +67,33 @@ async function cleanService({ name, host, apiKey, version }) {
     return;
   }
 
+  const toRemove = records.map(item => ({ item, reason: classifyItem(item) })).filter(x => x.reason);
   let removed = 0;
-  for (const item of records) {
-    const reason = classifyItem(item);
-    if (!reason) continue;
+
+  await Promise.all(toRemove.map(async ({ item, reason }) => {
     const title = item.title ?? item.movieTitle ?? item.seriesTitle ?? `id:${item.id}`;
     console.log(`[${name}] Removing [${reason}]: ${title}`);
     try {
-      const status = await removeItem(host, apiKey, version, item.id);
-      console.log(`  → ${status}`);
+      await removeItem(host, apiKey, version, item.id);
       removed++;
     } catch (err) {
-      console.log(`  → Remove failed: ${err.message}`);
+      console.log(`[${name}] Remove failed: ${err.message}`);
     }
-  }
+  }));
 
   console.log(`[${name}] Done — ${removed} removed, ${records.length - removed} clean`);
 }
 
+let isRunning = false;
+
 async function run() {
-  console.log(`\n[Gecko Cleaner] ${new Date().toISOString()}`);
-  for (const svc of SERVICES) {
-    await cleanService(svc);
+  if (isRunning) return;
+  isRunning = true;
+  try {
+    console.log(`\n[Gecko Cleaner] ${new Date().toISOString()}`);
+    await Promise.all(SERVICES.map(cleanService));
+  } finally {
+    isRunning = false;
   }
 }
 

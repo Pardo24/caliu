@@ -68,6 +68,10 @@ function composeDir() {
   return path.join(app.getPath('userData'), 'stack');
 }
 
+function stackBase() {
+  return app.isPackaged ? path.join(process.resourcesPath, 'stack') : path.join(__dirname, '../../stack');
+}
+
 function parseEnv(content: string): Record<string, string> {
   return Object.fromEntries(
     content.split('\n')
@@ -290,9 +294,8 @@ ipcMain.handle('install', async (event, config: {
   await fs.writeFile(path.join(dir, '.env'), envLines);
 
   const composeFile = vpnEnabled ? 'docker-compose.yml' : 'docker-compose-novpn.yml';
-  const stackBase = app.isPackaged ? path.join(process.resourcesPath, 'stack') : path.join(__dirname, '../../stack');
-  await fs.copyFile(path.join(stackBase, composeFile), path.join(dir, 'docker-compose.yml'));
-  await fs.cp(path.join(stackBase, 'cleaner'), path.join(dir, 'cleaner'), { recursive: true });
+  await fs.copyFile(path.join(stackBase(), composeFile), path.join(dir, 'docker-compose.yml'));
+  await fs.cp(path.join(stackBase(), 'cleaner'), path.join(dir, 'cleaner'), { recursive: true });
 
   // Step 2: Pull + start containers
   progress(2);
@@ -349,7 +352,7 @@ ipcMain.handle('install', async (event, config: {
     envContent = setKey(envContent, 'PROWLARR_API_KEY', apiKeys.prowlarr);
     await fs.writeFile(envPath, envContent);
     // Restart cleaner so it picks up the freshly written API keys
-    try { await execAsync('docker compose up -d --no-deps gecko-cleaner', { cwd: dir, env: dockerEnv() }); } catch { /* best-effort */ }
+    try { await execAsync('docker compose up -d --no-deps gecko-cleaner', { cwd: dir, env: dockerEnv() }); } catch (err) { console.warn('[install] gecko-cleaner restart failed:', err); }
   }
 
   return { failedSteps };
@@ -362,10 +365,7 @@ ipcMain.handle('add-vpn', async (_e, { mullvadKey, mullvadAddress }: { mullvadKe
   env += `\nMULLVAD_PRIVATE_KEY=${mullvadKey}\nMULLVAD_ADDRESSES=${mullvadAddress}\n`;
   await fs.writeFile(path.join(dir, '.env'), env);
 
-  const src = app.isPackaged
-    ? path.join(process.resourcesPath, 'stack', 'docker-compose.yml')
-    : path.join(__dirname, '../../stack/docker-compose.yml');
-  await fs.copyFile(src, path.join(dir, 'docker-compose.yml'));
+  await fs.copyFile(path.join(stackBase(), 'docker-compose.yml'), path.join(dir, 'docker-compose.yml'));
 
   await execAsync('docker compose down', { cwd: dir, env: dockerEnv() });
   await execAsync('docker compose up -d', { cwd: dir, env: dockerEnv() });
@@ -377,10 +377,7 @@ ipcMain.handle('remove-vpn', async () => {
   env = env.replace(/^MULLVAD_PRIVATE_KEY=.*$/m, '').replace(/^MULLVAD_ADDRESSES=.*$/m, '').trim() + '\n';
   await fs.writeFile(path.join(dir, '.env'), env);
 
-  const src = app.isPackaged
-    ? path.join(process.resourcesPath, 'stack', 'docker-compose-novpn.yml')
-    : path.join(__dirname, '../../stack/docker-compose-novpn.yml');
-  await fs.copyFile(src, path.join(dir, 'docker-compose.yml'));
+  await fs.copyFile(path.join(stackBase(), 'docker-compose-novpn.yml'), path.join(dir, 'docker-compose.yml'));
 
   await execAsync('docker compose down', { cwd: dir, env: dockerEnv() });
   await execAsync('docker compose up -d', { cwd: dir, env: dockerEnv() });
